@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     
     <script>
         tailwind.config = {
@@ -104,12 +105,17 @@
     <!-- Auth View -->
     <div id="auth-container" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 transition-all">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-slate-800 mb-2">
+            <h1 id="authTitle" class="text-2xl font-bold text-slate-800 mb-2">
                 <i class="fa-solid fa-user-lock text-brand-500 mr-2"></i> تسجيل الدخول
             </h1>
-            <p class="text-slate-500 text-sm">قم بتسجيل الدخول لحفظ وإدارة مهامك</p>
+            <p id="authSubtitle" class="text-slate-500 text-sm">قم بتسجيل الدخول لحفظ وإدارة مهامك</p>
         </div>
         <form id="authForm" class="flex flex-col gap-4">
+            <div id="nameContainer" class="hidden">
+                <label class="block text-slate-700 text-sm font-bold mb-2" for="userName">الاسم</label>
+                <input type="text" id="userName" placeholder="اسمك الكريم"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-right" dir="rtl">
+            </div>
             <div>
                 <label class="block text-slate-700 text-sm font-bold mb-2" for="email">البريد الإلكتروني</label>
                 <input type="email" id="email" required placeholder="name@example.com"
@@ -123,9 +129,11 @@
             <div id="authError" class="hidden text-red-500 text-sm mt-2 text-center bg-red-50 p-2 rounded-lg border border-red-100"></div>
             <button type="submit" id="authSubmitBtn"
                 class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors mt-2 shadow-sm">
-                تسجيل الدخول أو إنشاء حساب
+                تسجيل الدخول
             </button>
-            <p class="text-xs text-slate-400 text-center mt-2">إذا لم يكن لديك حساب، سيتم إنشاؤه تلقائياً</p>
+            <button type="button" id="toggleAuthModeBtn" onclick="toggleAuthMode()" class="text-sm text-slate-500 hover:text-brand-600 font-medium mt-2 transition-colors">
+                ليس لديك حساب؟ <span class="font-bold underline">إنشاء حساب جديد</span>
+            </button>
         </form>
     </div>
 
@@ -138,7 +146,7 @@
             <div class="flex items-center gap-4">
                 <div class="text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full flex items-center gap-2">
                     <i class="fa-solid fa-user text-slate-400"></i>
-                    <span id="userEmailDisplay" dir="ltr"></span>
+                    <span id="userEmailDisplay" dir="rtl"></span>
                 </div>
                 <button onclick="logout()" class="text-slate-500 hover:text-red-500 transition-colors flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                     <i class="fa-solid fa-right-from-bracket"></i> خروج
@@ -381,13 +389,42 @@
             });
         });
 
+        let isSignUpMode = false;
+
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            const nameContainer = document.getElementById('nameContainer');
+            const authTitle = document.getElementById('authTitle');
+            const authSubtitle = document.getElementById('authSubtitle');
+            const authSubmitBtn = document.getElementById('authSubmitBtn');
+            const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+            const userNameInput = document.getElementById('userName');
+
+            if (isSignUpMode) {
+                nameContainer.classList.remove('hidden');
+                userNameInput.required = true;
+                authTitle.innerHTML = '<i class="fa-solid fa-user-plus text-brand-500 mr-2"></i> إنشاء حساب';
+                authSubtitle.textContent = 'أدخل بياناتك لإنشاء حساب جديد';
+                authSubmitBtn.textContent = 'إنشاء حساب';
+                toggleAuthModeBtn.innerHTML = 'لديك حساب بالفعل؟ <span class="font-bold underline">تسجيل الدخول</span>';
+            } else {
+                nameContainer.classList.add('hidden');
+                userNameInput.required = false;
+                authTitle.innerHTML = '<i class="fa-solid fa-user-lock text-brand-500 mr-2"></i> تسجيل الدخول';
+                authSubtitle.textContent = 'قم بتسجيل الدخول لحفظ وإدارة مهامك';
+                authSubmitBtn.textContent = 'تسجيل الدخول';
+                toggleAuthModeBtn.innerHTML = 'ليس لديك حساب؟ <span class="font-bold underline">إنشاء حساب جديد</span>';
+            }
+        }
+
         function handleAuthChange(session) {
             const authContainer = document.getElementById('auth-container');
             const appContainer = document.getElementById('app-container');
             
             if (session && session.user) {
                 currentUser = session.user;
-                document.getElementById('userEmailDisplay').textContent = currentUser.email;
+                const displayName = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+                document.getElementById('userEmailDisplay').textContent = displayName;
                 authContainer.classList.add('hidden');
                 appContainer.classList.remove('hidden');
                 loadTasks();
@@ -416,15 +453,17 @@
                 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
+                const name = document.getElementById('userName').value;
                 
-                // محاولة تسجيل الدخول
-                let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                
-                if (error && error.message.includes('Invalid login credentials')) {
-                    // إذا فشل تسجيل الدخول، نقوم بإنشائه
-                    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+                if (isSignUpMode) {
+                    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ 
+                        email, 
+                        password,
+                        options: { data: { display_name: name } }
+                    });
+                    
                     if (signUpError) {
-                        errorDiv.textContent = (signUpError.message === 'User already registered') ? 'كلمة المرور غير صحيحة' : signUpError.message;
+                        errorDiv.textContent = (signUpError.message === 'User already registered') ? 'البريد الإلكتروني مسجل بالفعل' : signUpError.message;
                         errorDiv.classList.remove('hidden');
                     } else if (signUpData.user && signUpData.session) {
                         showNotification('تم إنشاء الحساب بنجاح');
@@ -432,13 +471,16 @@
                         errorDiv.textContent = 'تم إنشاء الحساب بنجاح. يرجى تفعيل البريد الإلكتروني إذا كان مطلوباً.';
                         errorDiv.classList.remove('hidden');
                     }
-                } else if (error) {
-                    errorDiv.textContent = error.message;
-                    errorDiv.classList.remove('hidden');
+                } else {
+                    let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) {
+                        errorDiv.textContent = error.message.includes('Invalid login credentials') ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : error.message;
+                        errorDiv.classList.remove('hidden');
+                    }
                 }
                 
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'تسجيل الدخول أو إنشاء حساب';
+                submitBtn.textContent = isSignUpMode ? 'إنشاء حساب' : 'تسجيل الدخول';
             });
         }
 
