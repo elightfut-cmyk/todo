@@ -162,6 +162,9 @@
             <button onclick="switchTab('trusts')" id="tab-trusts" class="px-6 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                 <i class="fa-solid fa-hand-holding-heart"></i> الأمانات
             </button>
+            <button onclick="switchTab('debts')" id="tab-debts" class="px-6 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-wave"></i> الديون
+            </button>
         </div>
 
         <!-- Tasks View -->
@@ -343,6 +346,61 @@
 
     </div>
 
+        <!-- Debts View -->
+        <div id="debts-view" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div class="bg-red-50 rounded-2xl p-6 border border-red-100 flex items-center justify-between shadow-sm">
+                    <div>
+                        <p class="text-sm font-bold text-red-600 mb-1">إجمالي الديون المتبقية</p>
+                        <h3 id="totalRemainingDebts" class="text-3xl font-black text-red-700">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                </div>
+                <div class="bg-brand-50 rounded-2xl p-6 border border-brand-100 flex items-center justify-between shadow-sm">
+                    <div>
+                        <p class="text-sm font-bold text-brand-600 mb-1">الديون المسددة</p>
+                        <h3 id="totalPaidDebts" class="text-3xl font-black text-brand-700">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-500 text-xl">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
+                <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة دين جديد</h2>
+                <form id="debtForm" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <input type="text" id="debtCreditor" placeholder="اسم الدائن" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700">
+                    </div>
+                    <div class="w-full md:w-40 flex-shrink-0">
+                        <input type="number" id="debtAmount" placeholder="المبلغ" required min="0" step="0.01"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700" dir="ltr">
+                    </div>
+                    <div class="w-full md:w-48 flex-shrink-0">
+                        <input type="date" id="debtDueDate" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700 text-right">
+                    </div>
+                    <button type="submit"
+                        class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> إضافة
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-list"></i> سجل الديون
+                </h3>
+                <ul id="list-debts" class="space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <script>
         const supabaseUrl = 'https://snilvnrqzosgnwzplsgb.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuaWx2bnJxem9zZ253enBsc2diIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDcxMDk4OCwiZXhwIjoyMTA2Mjg2OTg4fQ.kFshuk5wm9cXMG7F0WqnCXbI_boXG5kTPNVTijBKntE';
@@ -351,23 +409,32 @@
         function switchTab(tab) {
             const tasksView = document.getElementById('tasks-view');
             const trustsView = document.getElementById('trusts-view');
+            const debtsView = document.getElementById('debts-view');
+            
             const tabTasks = document.getElementById('tab-tasks');
             const tabTrusts = document.getElementById('tab-trusts');
+            const tabDebts = document.getElementById('tab-debts');
             
+            [tasksView, trustsView, debtsView].forEach(v => v && v.classList.add('hidden'));
+            [tabTasks, tabTrusts, tabDebts].forEach(t => {
+                if(t) {
+                    t.classList.remove('text-brand-600', 'border-brand-500');
+                    t.classList.add('text-slate-500', 'border-transparent');
+                }
+            });
+
             if (tab === 'tasks') {
                 tasksView.classList.remove('hidden');
-                trustsView.classList.add('hidden');
                 tabTasks.classList.add('text-brand-600', 'border-brand-500');
                 tabTasks.classList.remove('text-slate-500', 'border-transparent');
-                tabTrusts.classList.add('text-slate-500', 'border-transparent');
-                tabTrusts.classList.remove('text-brand-600', 'border-brand-500');
-            } else {
+            } else if (tab === 'trusts') {
                 trustsView.classList.remove('hidden');
-                tasksView.classList.add('hidden');
                 tabTrusts.classList.add('text-brand-600', 'border-brand-500');
                 tabTrusts.classList.remove('text-slate-500', 'border-transparent');
-                tabTasks.classList.add('text-slate-500', 'border-transparent');
-                tabTasks.classList.remove('text-brand-600', 'border-brand-500');
+            } else if (tab === 'debts') {
+                debtsView.classList.remove('hidden');
+                tabDebts.classList.add('text-brand-600', 'border-brand-500');
+                tabDebts.classList.remove('text-slate-500', 'border-transparent');
             }
         }
 
@@ -377,6 +444,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             setupForm();
             setupTrustForm();
+            if(typeof setupDebtForm === 'function') setupDebtForm();
             setupAuth();
 
             const taskOptions = {
@@ -484,12 +552,16 @@
                 appContainer.classList.remove('hidden');
                 loadTasks();
                 loadTrusts();
+                if(typeof loadDebts === 'function') loadDebts();
             } else {
                 currentUser = null;
                 tasks = [];
                 trusts = [];
-                renderTasks();
-                renderTrusts();
+                if(typeof renderTasks === 'function') {
+                    renderTasks();
+                    renderTrusts();
+                    if(typeof renderDebts === 'function') { debts = []; renderDebts(); }
+                }
                 authContainer.classList.remove('hidden');
                 appContainer.classList.add('hidden');
             }
@@ -1099,6 +1171,173 @@
                     await supabaseClient.from('trusts').update({ text: newText }).eq('id', id);
                 });
             }
+        }
+        // --- Debts Logic ---
+        let debts = [];
+
+        function setupDebtForm() {
+            const form = document.getElementById('debtForm');
+            if(!form) return;
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const creditor = document.getElementById('debtCreditor').value.trim();
+                const amount = parseFloat(document.getElementById('debtAmount').value);
+                const dueDate = document.getElementById('debtDueDate').value;
+                
+                if (creditor && !isNaN(amount) && dueDate) {
+                    await addDebt(creditor, amount, dueDate);
+                    document.getElementById('debtCreditor').value = '';
+                    document.getElementById('debtAmount').value = '';
+                    document.getElementById('debtDueDate').value = '';
+                    document.getElementById('debtCreditor').focus();
+                }
+            });
+        }
+
+        async function addDebt(creditor, amount, dueDate) {
+            if (!currentUser) return;
+            const newDebt = {
+                id: 'debt_' + Date.now().toString(),
+                creditor_name: creditor,
+                amount: amount,
+                due_date: dueDate,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            debts.push(newDebt);
+            renderDebts();
+            showNotification('تم إضافة الدين بنجاح');
+            
+            await supabaseClient.from('debts').insert([{
+                id: newDebt.id,
+                creditor_name: newDebt.creditor_name,
+                amount: newDebt.amount,
+                due_date: newDebt.due_date,
+                completed: newDebt.completed,
+                created_at: newDebt.createdAt,
+                user_id: currentUser.id
+            }]);
+        }
+
+        async function toggleDebtStatus(id) {
+            const index = debts.findIndex(d => d.id === id);
+            if (index !== -1) {
+                debts[index].completed = !debts[index].completed;
+                if (debts[index].completed) playSound('complete');
+                renderDebts();
+                
+                await supabaseClient.from('debts').update({ completed: debts[index].completed }).eq('id', id);
+            }
+        }
+
+        async function deleteDebt(id) {
+            debts = debts.filter(d => d.id !== id);
+            renderDebts();
+            await supabaseClient.from('debts').delete().eq('id', id);
+        }
+
+        async function editDebt(id) {
+            const index = debts.findIndex(d => d.id === id);
+            if (index !== -1) {
+                showEditModal(debts[index].creditor_name, async (newText) => {
+                    debts[index].creditor_name = newText;
+                    renderDebts();
+                    showNotification('تم التعديل بنجاح');
+                    await supabaseClient.from('debts').update({ creditor_name: newText }).eq('id', id);
+                });
+            }
+        }
+
+        async function loadDebts() {
+            if (!currentUser) return;
+            const { data, error } = await supabaseClient.from('debts').select('*').eq('user_id', currentUser.id);
+            if (data && !error) {
+                debts = data.map(d => ({
+                    id: d.id,
+                    creditor_name: d.creditor_name,
+                    amount: parseFloat(d.amount),
+                    due_date: d.due_date,
+                    completed: d.completed,
+                    createdAt: d.created_at
+                }));
+            } else {
+                debts = [];
+            }
+            renderDebts();
+        }
+
+        function renderDebts() {
+            const list = document.getElementById('list-debts');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            let totalRemaining = 0;
+            let totalPaid = 0;
+
+            const sorted = [...debts].sort((a, b) => {
+                if (a.completed === b.completed) {
+                    return new Date(a.due_date) - new Date(b.due_date);
+                }
+                return a.completed ? 1 : -1;
+            });
+
+            sorted.forEach(debt => {
+                if(debt.completed) totalPaid += debt.amount;
+                else totalRemaining += debt.amount;
+
+                const li = document.createElement('li');
+                li.className = `task-card bg-white border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${debt.completed ? 'task-completed opacity-75' : ''}`;
+                
+                const isOverdue = !debt.completed && new Date(debt.due_date) < new Date(new Date().setHours(0,0,0,0));
+                const dateColor = debt.completed ? 'text-slate-400' : (isOverdue ? 'text-red-500 font-bold' : 'text-blue-500');
+
+                li.innerHTML = `
+                    <div class="flex items-start gap-3 flex-grow overflow-hidden pt-1">
+                        <input type="checkbox" 
+                               class="checkbox-custom mt-0.5" 
+                               ${debt.completed ? 'checked' : ''} 
+                               onchange="toggleDebtStatus('${debt.id}')"
+                               id="check-${debt.id}">
+                        <div class="flex flex-col">
+                            <label for="check-${debt.id}" class="task-text text-sm md:text-base font-bold break-words cursor-pointer select-none ${debt.completed ? 'text-slate-500' : 'text-slate-800'}">
+                                الدائن: ${escapeHTML(debt.creditor_name)}
+                            </label>
+                            <div class="flex items-center gap-4 mt-1 text-sm">
+                                <span class="font-bold ${debt.completed ? 'text-slate-400' : 'text-brand-600'}">
+                                    <i class="fa-solid fa-coins mr-1"></i> ${debt.amount.toLocaleString()}
+                                </span>
+                                <span class="${dateColor}">
+                                    <i class="fa-regular fa-calendar mr-1"></i> ${debt.due_date}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 flex-shrink-0 self-end md:self-center">
+                        <button onclick="editDebt('${debt.id}')" 
+                                class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                                title="تعديل الدائن">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteDebt('${debt.id}')" 
+                                class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                title="حذف الدين">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            if (debts.length === 0) {
+                list.innerHTML = '<li class="text-center text-slate-400 text-sm py-8 border-2 border-dashed border-slate-100 rounded-xl">لا توجد ديون مسجلة حالياً</li>';
+            }
+
+            const totalRemainingEl = document.getElementById('totalRemainingDebts');
+            const totalPaidEl = document.getElementById('totalPaidDebts');
+            if(totalRemainingEl) totalRemainingEl.textContent = totalRemaining.toLocaleString();
+            if(totalPaidEl) totalPaidEl.textContent = totalPaid.toLocaleString();
         }
     </script>
 </body>
