@@ -101,11 +101,44 @@
 </head>
 <body class="min-h-screen p-4 md:p-8 selection:bg-brand-500 selection:text-white">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="text-center mb-6">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-2">
+    <!-- Auth View -->
+    <div id="auth-container" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 transition-all">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-slate-800 mb-2">
+                <i class="fa-solid fa-user-lock text-brand-500 mr-2"></i> تسجيل الدخول
+            </h1>
+            <p class="text-slate-500 text-sm">قم بتسجيل الدخول لحفظ وإدارة مهامك</p>
+        </div>
+        <form id="authForm" class="flex flex-col gap-4">
+            <div>
+                <label class="block text-slate-700 text-sm font-bold mb-2" for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" required placeholder="name@example.com"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-left" dir="ltr">
+            </div>
+            <div>
+                <label class="block text-slate-700 text-sm font-bold mb-2" for="password">كلمة المرور</label>
+                <input type="password" id="password" required minlength="6" placeholder="••••••••"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-left" dir="ltr">
+            </div>
+            <div id="authError" class="hidden text-red-500 text-sm mt-2 text-center bg-red-50 p-2 rounded-lg border border-red-100"></div>
+            <button type="submit" id="authSubmitBtn"
+                class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors mt-2 shadow-sm">
+                تسجيل الدخول أو إنشاء حساب
+            </button>
+            <p class="text-xs text-slate-400 text-center mt-2">إذا لم يكن لديك حساب، سيتم إنشاؤه تلقائياً</p>
+        </form>
+    </div>
+
+    <!-- Main App View -->
+    <div id="app-container" class="max-w-6xl mx-auto hidden">
+        <header class="text-center mb-6 relative flex flex-col md:flex-row items-center justify-between md:mb-10">
+            <div class="hidden md:block w-32"></div> <!-- Spacer -->
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4 md:mb-0">
                 <i class="fa-solid fa-layer-group text-brand-500 mr-2"></i> منصة التنظيم
             </h1>
+            <button onclick="logout()" class="text-slate-500 hover:text-red-500 transition-colors flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm md:w-32 justify-center">
+                <i class="fa-solid fa-right-from-bracket"></i> خروج
+            </button>
         </header>
 
         <!-- Tabs -->
@@ -325,13 +358,87 @@
             }
         }
 
-        // التهيئة وقراءة البيانات من localStorage
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTasks();
+        // التهيئة وقراءة البيانات
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
             setupForm();
-            loadTrusts();
             setupTrustForm();
+            setupAuth();
+
+            // التحقق من الجلسة الحالية
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            handleAuthChange(session);
+
+            // الاستماع لتغيرات حالة المصادقة
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                handleAuthChange(session);
+            });
         });
+
+        function handleAuthChange(session) {
+            const authContainer = document.getElementById('auth-container');
+            const appContainer = document.getElementById('app-container');
+            
+            if (session && session.user) {
+                currentUser = session.user;
+                authContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                loadTasks();
+                loadTrusts();
+            } else {
+                currentUser = null;
+                tasks = [];
+                trusts = [];
+                renderTasks();
+                renderTrusts();
+                authContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        }
+
+        function setupAuth() {
+            const form = document.getElementById('authForm');
+            const errorDiv = document.getElementById('authError');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorDiv.classList.add('hidden');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المعالجة...';
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // محاولة تسجيل الدخول
+                let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                
+                if (error && error.message.includes('Invalid login credentials')) {
+                    // إذا فشل تسجيل الدخول، نقوم بإنشائه
+                    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+                    if (signUpError) {
+                        errorDiv.textContent = (signUpError.message === 'User already registered') ? 'كلمة المرور غير صحيحة' : signUpError.message;
+                        errorDiv.classList.remove('hidden');
+                    } else if (signUpData.user && signUpData.session) {
+                        showNotification('تم إنشاء الحساب بنجاح');
+                    } else if (signUpData.user && !signUpData.session) {
+                        errorDiv.textContent = 'تم إنشاء الحساب بنجاح. يرجى تفعيل البريد الإلكتروني إذا كان مطلوباً.';
+                        errorDiv.classList.remove('hidden');
+                    }
+                } else if (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.classList.remove('hidden');
+                }
+                
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'تسجيل الدخول أو إنشاء حساب';
+            });
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+        }
 
         // مصفوفة لتخزين المهام
         let tasks = [];
@@ -358,6 +465,7 @@
 
         // دالة إضافة مهمة جديدة
         async function addTask(text, category) {
+            if (!currentUser) return;
             const newTask = {
                 id: Date.now().toString(),
                 text: text,
@@ -375,7 +483,8 @@
                 text: newTask.text,
                 category: newTask.category,
                 completed: newTask.completed,
-                created_at: newTask.createdAt
+                created_at: newTask.createdAt,
+                user_id: currentUser.id
             }]);
             
             if (error) console.error("Error adding task:", error);
@@ -405,7 +514,8 @@
 
         // تحميل المهام من Supabase
         async function loadTasks() {
-            const { data, error } = await supabaseClient.from('tasks').select('*');
+            if (!currentUser) return;
+            const { data, error } = await supabaseClient.from('tasks').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
                 tasks = data.map(d => ({
                     id: d.id,
@@ -500,11 +610,12 @@
 
         // مسح جميع البيانات
         function clearAllData() {
+            if (!currentUser) return;
             showConfirmModal('هل أنت متأكد من مسح جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
                 tasks = [];
                 renderTasks();
                 showNotification('تم مسح جميع المهام');
-                await supabaseClient.from('tasks').delete().neq('id', '0');
+                await supabaseClient.from('tasks').delete().eq('user_id', currentUser.id);
             });
         }
 
@@ -550,6 +661,7 @@
         }
 
         async function addTrust(text, category) {
+            if (!currentUser) return;
             const newTrust = {
                 id: 'trust_' + Date.now().toString(),
                 text: text,
@@ -567,7 +679,8 @@
                 text: newTrust.text,
                 category: newTrust.category,
                 completed: newTrust.completed,
-                created_at: newTrust.createdAt
+                created_at: newTrust.createdAt,
+                user_id: currentUser.id
             }]);
         }
 
@@ -587,7 +700,8 @@
         }
 
         async function loadTrusts() {
-            const { data, error } = await supabaseClient.from('trusts').select('*');
+            if (!currentUser) return;
+            const { data, error } = await supabaseClient.from('trusts').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
                 trusts = data.map(d => ({
                     id: d.id,
@@ -673,11 +787,12 @@
         }
 
         function clearAllTrusts() {
+            if (!currentUser) return;
             showConfirmModal('هل أنت متأكد من مسح جميع الأمانات؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
                 trusts = [];
                 renderTrusts();
                 showNotification('تم مسح جميع الأمانات');
-                await supabaseClient.from('trusts').delete().neq('id', '0');
+                await supabaseClient.from('trusts').delete().eq('user_id', currentUser.id);
             });
         }
 
