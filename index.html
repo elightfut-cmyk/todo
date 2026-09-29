@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جدول أعمالي - مصفوفة أيزنهاور</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -297,6 +298,10 @@
     </div>
 
     <script>
+        const supabaseUrl = 'https://snilvnrqzosgnwzplsgb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuaWx2bnJxem9zZ253enBsc2diIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDcxMDk4OCwiZXhwIjoyMTA2Mjg2OTg4fQ.kFshuk5wm9cXMG7F0WqnCXbI_boXG5kTPNVTijBKntE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
         function switchTab(tab) {
             const tasksView = document.getElementById('tasks-view');
             const trustsView = document.getElementById('trusts-view');
@@ -334,7 +339,7 @@
         // إعداد نموذج الإضافة
         function setupForm() {
             const form = document.getElementById('taskForm');
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const taskInput = document.getElementById('taskInput');
@@ -344,7 +349,7 @@
                 const category = categorySelect.value;
                 
                 if (text) {
-                    addTask(text, category);
+                    await addTask(text, category);
                     taskInput.value = ''; // تفريغ الحقل
                     taskInput.focus(); // إعادة التركيز
                 }
@@ -352,9 +357,9 @@
         }
 
         // دالة إضافة مهمة جديدة
-        function addTask(text, category) {
+        async function addTask(text, category) {
             const newTask = {
-                id: Date.now().toString(), // معرف فريد بناءً على الوقت
+                id: Date.now().toString(),
                 text: text,
                 category: category,
                 completed: false,
@@ -362,45 +367,56 @@
             };
             
             tasks.push(newTask);
-            saveTasks();
             renderTasks();
-            
-            // إضافة تأثير مرئي بسيط عند الإضافة
             showNotification('تم إضافة المهمة بنجاح');
+            
+            const { error } = await supabaseClient.from('tasks').insert([{
+                id: newTask.id,
+                text: newTask.text,
+                category: newTask.category,
+                completed: newTask.completed,
+                created_at: newTask.createdAt
+            }]);
+            
+            if (error) console.error("Error adding task:", error);
         }
 
         // دالة تبديل حالة المهمة (مكتملة / غير مكتملة)
-        function toggleTaskStatus(id) {
+        async function toggleTaskStatus(id) {
             const taskIndex = tasks.findIndex(t => t.id === id);
             if (taskIndex !== -1) {
                 tasks[taskIndex].completed = !tasks[taskIndex].completed;
-                saveTasks();
                 renderTasks();
+                
+                await supabaseClient
+                    .from('tasks')
+                    .update({ completed: tasks[taskIndex].completed })
+                    .eq('id', id);
             }
         }
 
         // دالة حذف مهمة
-        function deleteTask(id) {
+        async function deleteTask(id) {
             tasks = tasks.filter(t => t.id !== id);
-            saveTasks();
             renderTasks();
+            
+            await supabaseClient.from('tasks').delete().eq('id', id);
         }
 
-        // حفظ المهام في localStorage
-        function saveTasks() {
-            localStorage.setItem('eisenhowerTasks', JSON.stringify(tasks));
-        }
-
-        // تحميل المهام من localStorage
-        function loadTasks() {
-            const savedTasks = localStorage.getItem('eisenhowerTasks');
-            if (savedTasks) {
-                try {
-                    tasks = JSON.parse(savedTasks);
-                } catch (e) {
-                    console.error("خطأ في قراءة البيانات المحفوظة", e);
-                    tasks = [];
-                }
+        // تحميل المهام من Supabase
+        async function loadTasks() {
+            const { data, error } = await supabaseClient.from('tasks').select('*');
+            if (data && !error) {
+                tasks = data.map(d => ({
+                    id: d.id,
+                    text: d.text,
+                    category: d.category,
+                    completed: d.completed,
+                    createdAt: d.created_at
+                }));
+            } else {
+                console.error("Error loading tasks:", error);
+                tasks = [];
             }
             renderTasks();
         }
@@ -484,12 +500,11 @@
 
         // مسح جميع البيانات
         function clearAllData() {
-            // استخدام رسالة تأكيد مخصصة (Custom Modal) بدلاً من confirm() حسب التعليمات
-            showConfirmModal('هل أنت متأكد من مسح جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.', () => {
+            showConfirmModal('هل أنت متأكد من مسح جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
                 tasks = [];
-                saveTasks();
                 renderTasks();
                 showNotification('تم مسح جميع المهام');
+                await supabaseClient.from('tasks').delete().neq('id', '0');
             });
         }
 
@@ -498,16 +513,16 @@
             ev.preventDefault();
         }
 
-        function drop(ev, category) {
+        async function drop(ev, category) {
             ev.preventDefault();
             const taskId = ev.dataTransfer.getData('taskId');
             if (taskId) {
                 const taskIndex = tasks.findIndex(t => t.id === taskId);
                 if (taskIndex !== -1 && tasks[taskIndex].category !== category) {
                     tasks[taskIndex].category = category;
-                    saveTasks();
                     renderTasks();
                     showNotification('تم نقل المهمة');
+                    await supabaseClient.from('tasks').update({ category: category }).eq('id', taskId);
                 }
             }
         }
@@ -517,7 +532,7 @@
 
         function setupTrustForm() {
             const form = document.getElementById('trustForm');
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const input = document.getElementById('trustInput');
@@ -527,14 +542,14 @@
                 const category = select.value;
                 
                 if (text) {
-                    addTrust(text, category);
+                    await addTrust(text, category);
                     input.value = '';
                     input.focus();
                 }
             });
         }
 
-        function addTrust(text, category) {
+        async function addTrust(text, category) {
             const newTrust = {
                 id: 'trust_' + Date.now().toString(),
                 text: text,
@@ -544,39 +559,46 @@
             };
             
             trusts.push(newTrust);
-            saveTrusts();
             renderTrusts();
             showNotification('تم إضافة الأمانة بنجاح');
+            
+            await supabaseClient.from('trusts').insert([{
+                id: newTrust.id,
+                text: newTrust.text,
+                category: newTrust.category,
+                completed: newTrust.completed,
+                created_at: newTrust.createdAt
+            }]);
         }
 
-        function toggleTrustStatus(id) {
+        async function toggleTrustStatus(id) {
             const index = trusts.findIndex(t => t.id === id);
             if (index !== -1) {
                 trusts[index].completed = !trusts[index].completed;
-                saveTrusts();
                 renderTrusts();
+                await supabaseClient.from('trusts').update({ completed: trusts[index].completed }).eq('id', id);
             }
         }
 
-        function deleteTrust(id) {
+        async function deleteTrust(id) {
             trusts = trusts.filter(t => t.id !== id);
-            saveTrusts();
             renderTrusts();
+            await supabaseClient.from('trusts').delete().eq('id', id);
         }
 
-        function saveTrusts() {
-            localStorage.setItem('trustsData', JSON.stringify(trusts));
-        }
-
-        function loadTrusts() {
-            const saved = localStorage.getItem('trustsData');
-            if (saved) {
-                try {
-                    trusts = JSON.parse(saved);
-                } catch (e) {
-                    console.error("خطأ في قراءة بيانات الأمانات", e);
-                    trusts = [];
-                }
+        async function loadTrusts() {
+            const { data, error } = await supabaseClient.from('trusts').select('*');
+            if (data && !error) {
+                trusts = data.map(d => ({
+                    id: d.id,
+                    text: d.text,
+                    category: d.category,
+                    completed: d.completed,
+                    createdAt: d.created_at
+                }));
+            } else {
+                console.error("Error loading trusts:", error);
+                trusts = [];
             }
             renderTrusts();
         }
@@ -651,24 +673,24 @@
         }
 
         function clearAllTrusts() {
-            showConfirmModal('هل أنت متأكد من مسح جميع الأمانات؟ لا يمكن التراجع عن هذا الإجراء.', () => {
+            showConfirmModal('هل أنت متأكد من مسح جميع الأمانات؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
                 trusts = [];
-                saveTrusts();
                 renderTrusts();
                 showNotification('تم مسح جميع الأمانات');
+                await supabaseClient.from('trusts').delete().neq('id', '0');
             });
         }
 
-        function dropTrust(ev, category) {
+        async function dropTrust(ev, category) {
             ev.preventDefault();
             const trustId = ev.dataTransfer.getData('trustId');
             if (trustId) {
                 const index = trusts.findIndex(t => t.id === trustId);
                 if (index !== -1 && trusts[index].category !== category) {
                     trusts[index].category = category;
-                    saveTrusts();
                     renderTrusts();
                     showNotification('تم نقل الأمانة');
+                    await supabaseClient.from('trusts').update({ category: category }).eq('id', trustId);
                 }
             }
         }
