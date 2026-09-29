@@ -101,13 +101,24 @@
 <body class="min-h-screen p-4 md:p-8 selection:bg-brand-500 selection:text-white">
 
     <div class="max-w-6xl mx-auto">
-        <header class="text-center mb-8">
+        <header class="text-center mb-6">
             <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-2">
-                <i class="fa-solid fa-list-check text-brand-500 mr-2"></i> جدول أعمالي
+                <i class="fa-solid fa-layer-group text-brand-500 mr-2"></i> منصة التنظيم
             </h1>
-            <p class="text-slate-500">نظم وقتك باستخدام مصفوفة أيزنهاور</p>
         </header>
 
+        <!-- Tabs -->
+        <div class="flex justify-center gap-4 mb-8 border-b border-slate-200">
+            <button onclick="switchTab('tasks')" id="tab-tasks" class="px-6 py-3 font-semibold text-brand-600 border-b-2 border-brand-500 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-list-check"></i> المهام
+            </button>
+            <button onclick="switchTab('trusts')" id="tab-trusts" class="px-6 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-heart"></i> الأمانات
+            </button>
+        </div>
+
+        <!-- Tasks View -->
+        <div id="tasks-view">
         <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
             <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة مهمة جديدة</h2>
             <form id="taskForm" class="flex flex-col md:flex-row gap-4">
@@ -205,14 +216,116 @@
             </button>
             <p class="text-xs text-slate-400">يتم حفظ البيانات تلقائياً في جهازك.</p>
         </div>
+        </div>
+
+        <!-- Trusts View -->
+        <div id="trusts-view" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
+                <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة أمانة جديدة</h2>
+                <form id="trustForm" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <input type="text" id="trustInput" placeholder="ما هي الأمانة؟" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
+                    </div>
+                    <div class="flex-shrink-0 w-full md:w-auto">
+                        <select id="trustCategorySelect" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 cursor-pointer appearance-none">
+                            <option value="urgent">عاجل</option>
+                            <option value="medium">متوسط</option>
+                            <option value="deferred">مؤجل</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> إضافة
+                    </button>
+                </form>
+            </div>
+
+            <!-- Trusts Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- عاجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-red-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500">
+                            <i class="fa-solid fa-bolt text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">عاجل</h3>
+                        </div>
+                    </div>
+                    <ul id="list-trust-urgent" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="dropTrust(event, 'urgent')">
+                    </ul>
+                </div>
+
+                <!-- متوسط -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-yellow-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                            <i class="fa-solid fa-balance-scale text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">متوسط</h3>
+                        </div>
+                    </div>
+                    <ul id="list-trust-medium" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="dropTrust(event, 'medium')">
+                    </ul>
+                </div>
+
+                <!-- مؤجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-gray-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                            <i class="fa-solid fa-clock text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">مؤجل</h3>
+                        </div>
+                    </div>
+                    <ul id="list-trust-deferred" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="dropTrust(event, 'deferred')">
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center flex flex-col items-center gap-4">
+                <button onclick="clearAllTrusts()" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> مسح جميع الأمانات
+                </button>
+            </div>
+        </div>
 
     </div>
 
     <script>
+        function switchTab(tab) {
+            const tasksView = document.getElementById('tasks-view');
+            const trustsView = document.getElementById('trusts-view');
+            const tabTasks = document.getElementById('tab-tasks');
+            const tabTrusts = document.getElementById('tab-trusts');
+            
+            if (tab === 'tasks') {
+                tasksView.classList.remove('hidden');
+                trustsView.classList.add('hidden');
+                tabTasks.classList.add('text-brand-600', 'border-brand-500');
+                tabTasks.classList.remove('text-slate-500', 'border-transparent');
+                tabTrusts.classList.add('text-slate-500', 'border-transparent');
+                tabTrusts.classList.remove('text-brand-600', 'border-brand-500');
+            } else {
+                trustsView.classList.remove('hidden');
+                tasksView.classList.add('hidden');
+                tabTrusts.classList.add('text-brand-600', 'border-brand-500');
+                tabTrusts.classList.remove('text-slate-500', 'border-transparent');
+                tabTasks.classList.add('text-slate-500', 'border-transparent');
+                tabTasks.classList.remove('text-brand-600', 'border-brand-500');
+            }
+        }
+
         // التهيئة وقراءة البيانات من localStorage
         document.addEventListener('DOMContentLoaded', () => {
             loadTasks();
             setupForm();
+            loadTrusts();
+            setupTrustForm();
         });
 
         // مصفوفة لتخزين المهام
@@ -395,6 +508,167 @@
                     saveTasks();
                     renderTasks();
                     showNotification('تم نقل المهمة');
+                }
+            }
+        }
+
+        // --- Trust Logic ---
+        let trusts = [];
+
+        function setupTrustForm() {
+            const form = document.getElementById('trustForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const input = document.getElementById('trustInput');
+                const select = document.getElementById('trustCategorySelect');
+                
+                const text = input.value.trim();
+                const category = select.value;
+                
+                if (text) {
+                    addTrust(text, category);
+                    input.value = '';
+                    input.focus();
+                }
+            });
+        }
+
+        function addTrust(text, category) {
+            const newTrust = {
+                id: 'trust_' + Date.now().toString(),
+                text: text,
+                category: category,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            trusts.push(newTrust);
+            saveTrusts();
+            renderTrusts();
+            showNotification('تم إضافة الأمانة بنجاح');
+        }
+
+        function toggleTrustStatus(id) {
+            const index = trusts.findIndex(t => t.id === id);
+            if (index !== -1) {
+                trusts[index].completed = !trusts[index].completed;
+                saveTrusts();
+                renderTrusts();
+            }
+        }
+
+        function deleteTrust(id) {
+            trusts = trusts.filter(t => t.id !== id);
+            saveTrusts();
+            renderTrusts();
+        }
+
+        function saveTrusts() {
+            localStorage.setItem('trustsData', JSON.stringify(trusts));
+        }
+
+        function loadTrusts() {
+            const saved = localStorage.getItem('trustsData');
+            if (saved) {
+                try {
+                    trusts = JSON.parse(saved);
+                } catch (e) {
+                    console.error("خطأ في قراءة بيانات الأمانات", e);
+                    trusts = [];
+                }
+            }
+            renderTrusts();
+        }
+
+        function renderTrusts() {
+            const lists = {
+                'urgent': document.getElementById('list-trust-urgent'),
+                'medium': document.getElementById('list-trust-medium'),
+                'deferred': document.getElementById('list-trust-deferred')
+            };
+
+            Object.values(lists).forEach(list => { if (list) list.innerHTML = ''; });
+
+            const sorted = [...trusts].sort((a, b) => {
+                if (a.completed === b.completed) {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                }
+                return a.completed ? 1 : -1;
+            });
+
+            sorted.forEach(trust => {
+                const list = lists[trust.category];
+                if (!list) return;
+
+                const li = document.createElement('li');
+                li.className = `task-card bg-white border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-3 ${trust.completed ? 'task-completed' : ''} cursor-move`;
+                li.setAttribute('draggable', 'true');
+                li.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('trustId', trust.id);
+                    e.target.style.opacity = '0.5';
+                });
+                li.addEventListener('dragend', (e) => {
+                    e.target.style.opacity = '1';
+                });
+                
+                if (!trust.completed) {
+                     if(trust.category === 'urgent') li.classList.add('bg-red-50');
+                     if(trust.category === 'medium') li.classList.add('bg-yellow-50');
+                     if(trust.category === 'deferred') li.classList.add('bg-slate-50');
+                }
+
+                li.innerHTML = `
+                    <div class="flex items-start gap-3 flex-grow overflow-hidden pt-1">
+                        <input type="checkbox" 
+                               class="checkbox-custom mt-0.5" 
+                               ${trust.completed ? 'checked' : ''} 
+                               onchange="toggleTrustStatus('${trust.id}')"
+                               id="check-${trust.id}">
+                        <label for="check-${trust.id}" class="task-text text-sm md:text-base font-medium break-words flex-grow cursor-pointer select-none">
+                            ${escapeHTML(trust.text)}
+                        </label>
+                    </div>
+                    <button onclick="deleteTrust('${trust.id}')" 
+                            class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
+                            title="حذف الأمانة">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                
+                list.appendChild(li);
+            });
+
+            Object.keys(lists).forEach(key => {
+                const list = lists[key];
+                if (list && list.children.length === 0) {
+                    const emptyMsg = document.createElement('li');
+                    emptyMsg.className = 'text-center text-slate-400 text-sm py-4 border-2 border-dashed border-slate-100 rounded-xl';
+                    emptyMsg.textContent = 'لا توجد أمانات';
+                    list.appendChild(emptyMsg);
+                }
+            });
+        }
+
+        function clearAllTrusts() {
+            showConfirmModal('هل أنت متأكد من مسح جميع الأمانات؟ لا يمكن التراجع عن هذا الإجراء.', () => {
+                trusts = [];
+                saveTrusts();
+                renderTrusts();
+                showNotification('تم مسح جميع الأمانات');
+            });
+        }
+
+        function dropTrust(ev, category) {
+            ev.preventDefault();
+            const trustId = ev.dataTransfer.getData('trustId');
+            if (trustId) {
+                const index = trusts.findIndex(t => t.id === trustId);
+                if (index !== -1 && trusts[index].category !== category) {
+                    trusts[index].category = category;
+                    saveTrusts();
+                    renderTrusts();
+                    showNotification('تم نقل الأمانة');
                 }
             }
         }
