@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -379,6 +379,61 @@
             setupTrustForm();
             setupAuth();
 
+            const taskOptions = {
+                group: 'tasks',
+                animation: 150,
+                delay: 200,
+                delayOnTouchOnly: true,
+                onEnd: async function (evt) {
+                    const itemEl = evt.item;
+                    const toList = evt.to;
+                    const fromList = evt.from;
+                    if (toList !== fromList) {
+                        const taskId = itemEl.getAttribute('data-id');
+                        const newCategory = toList.id.replace('list-', '');
+                        const taskIndex = tasks.findIndex(t => t.id === taskId);
+                        if (taskIndex !== -1) {
+                            tasks[taskIndex].category = newCategory;
+                            playSound('drop');
+                            showNotification('تم نقل المهمة');
+                            await supabaseClient.from('tasks').update({ category: newCategory }).eq('id', taskId);
+                            setTimeout(() => renderTasks(), 10);
+                        }
+                    }
+                }
+            };
+            new Sortable(document.getElementById('list-ui'), taskOptions);
+            new Sortable(document.getElementById('list-in'), taskOptions);
+            new Sortable(document.getElementById('list-un'), taskOptions);
+            new Sortable(document.getElementById('list-nn'), taskOptions);
+
+            const trustOptions = {
+                group: 'trusts',
+                animation: 150,
+                delay: 200,
+                delayOnTouchOnly: true,
+                onEnd: async function (evt) {
+                    const itemEl = evt.item;
+                    const toList = evt.to;
+                    const fromList = evt.from;
+                    if (toList !== fromList) {
+                        const trustId = itemEl.getAttribute('data-id');
+                        const newCategory = toList.id.replace('list-trust-', '');
+                        const index = trusts.findIndex(t => t.id === trustId);
+                        if (index !== -1) {
+                            trusts[index].category = newCategory;
+                            playSound('drop');
+                            showNotification('تم نقل الأمانة');
+                            await supabaseClient.from('trusts').update({ category: newCategory }).eq('id', trustId);
+                            setTimeout(() => renderTrusts(), 10);
+                        }
+                    }
+                }
+            };
+            new Sortable(document.getElementById('list-trust-urgent'), trustOptions);
+            new Sortable(document.getElementById('list-trust-medium'), trustOptions);
+            new Sortable(document.getElementById('list-trust-deferred'), trustOptions);
+
             // التحقق من الجلسة الحالية
             const { data: { session } } = await supabaseClient.auth.getSession();
             handleAuthChange(session);
@@ -634,14 +689,7 @@
 
                 const li = document.createElement('li');
                 li.className = `task-card bg-white border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-3 ${task.completed ? 'task-completed' : ''} cursor-move`;
-                li.setAttribute('draggable', 'true');
-                li.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', 'task_' + task.id);
-                    e.target.style.opacity = '0.5';
-                });
-                li.addEventListener('dragend', (e) => {
-                    e.target.style.opacity = '1';
-                });
+                li.setAttribute('data-id', task.id);
                 
                 // تحديد لون خلفية المهمة بناء على الفئة (للمهام غير المكتملة)
                 if (!task.completed) {
@@ -662,11 +710,18 @@
                             ${escapeHTML(task.text)}
                         </label>
                     </div>
-                    <button onclick="deleteTask('${task.id}')" 
-                            class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
-                            title="حذف المهمة">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    <div class="flex gap-1 flex-shrink-0">
+                        <button onclick="editTask('${task.id}')" 
+                                class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                                title="تعديل">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteTask('${task.id}')" 
+                                class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                title="حذف المهمة">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 `;
                 
                 list.appendChild(li);
@@ -818,14 +873,7 @@
 
                 const li = document.createElement('li');
                 li.className = `task-card bg-white border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-3 ${trust.completed ? 'task-completed' : ''} cursor-move`;
-                li.setAttribute('draggable', 'true');
-                li.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', 'trust_' + trust.id);
-                    e.target.style.opacity = '0.5';
-                });
-                li.addEventListener('dragend', (e) => {
-                    e.target.style.opacity = '1';
-                });
+                li.setAttribute('data-id', trust.id);
                 
                 if (!trust.completed) {
                      if(trust.category === 'urgent') li.classList.add('bg-red-50');
@@ -844,11 +892,18 @@
                             ${escapeHTML(trust.text)}
                         </label>
                     </div>
-                    <button onclick="deleteTrust('${trust.id}')" 
-                            class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
-                            title="حذف الأمانة">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    <div class="flex gap-1 flex-shrink-0">
+                        <button onclick="editTrust('${trust.id}')" 
+                                class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                                title="تعديل">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteTrust('${trust.id}')" 
+                                class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                title="حذف الأمانة">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 `;
                 
                 list.appendChild(li);
@@ -972,6 +1027,78 @@
                 onConfirm();
                 closeModal();
             };
+        }
+        function showEditModal(currentText, onSave) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">تعديل النص</h3>
+                        <input type="text" id="editInput" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 mb-6 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                        <div class="flex gap-3">
+                            <button id="cancelBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
+                            <button id="saveBtn" class="flex-1 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-medium transition-colors shadow-sm">حفظ</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const modalContent = modal.querySelector('.m-modal-content');
+            const input = modal.querySelector('#editInput');
+            input.value = currentText;
+            
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                input.focus();
+                input.select();
+            });
+            
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#cancelBtn').onclick = closeModal;
+            modal.querySelector('#saveBtn').onclick = () => {
+                const newVal = input.value.trim();
+                if (newVal) onSave(newVal);
+                closeModal();
+            };
+            
+            input.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') modal.querySelector('#saveBtn').click();
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+
+        async function editTask(id) {
+            const taskIndex = tasks.findIndex(t => t.id === id);
+            if (taskIndex !== -1) {
+                showEditModal(tasks[taskIndex].text, async (newText) => {
+                    tasks[taskIndex].text = newText;
+                    renderTasks();
+                    showNotification('تم التعديل بنجاح');
+                    await supabaseClient.from('tasks').update({ text: newText }).eq('id', id);
+                });
+            }
+        }
+
+        async function editTrust(id) {
+            const index = trusts.findIndex(t => t.id === id);
+            if (index !== -1) {
+                showEditModal(trusts[index].text, async (newText) => {
+                    trusts[index].text = newText;
+                    renderTrusts();
+                    showNotification('تم التعديل بنجاح');
+                    await supabaseClient.from('trusts').update({ text: newText }).eq('id', id);
+                });
+            }
         }
     </script>
 </body>
