@@ -264,7 +264,6 @@
             <button onclick="clearAllData()" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i> مسح جميع المهام
             </button>
-            <p class="text-xs text-slate-400">يتم حفظ البيانات تلقائياً في جهازك.</p>
         </div>
         </div>
 
@@ -510,7 +509,24 @@
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 handleAuthChange(session);
             });
+            
+            setupRealtime();
         });
+
+        function setupRealtime() {
+            supabaseClient
+                .channel('schema-db-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+                    loadTasks();
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'trusts' }, (payload) => {
+                    loadTrusts();
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, (payload) => {
+                    if(typeof loadDebts === 'function') loadDebts();
+                })
+                .subscribe();
+        }
 
         let isSignUpMode = false;
 
