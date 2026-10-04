@@ -186,43 +186,49 @@
         </div>
 
         <!-- Active Folder Banner -->
-        <div id="activeFolderBanner" class="hidden mb-6 bg-gradient-to-l from-emerald-600 to-teal-600 text-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+        <div id="activeFolderBanner" class="hidden mb-4 bg-gradient-to-l from-emerald-600 to-teal-600 text-white p-3.5 md:p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl text-white shadow-inner">
+                <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg md:text-xl text-white shadow-inner flex-shrink-0">
                     <i class="fa-solid fa-folder-open"></i>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-[11px] bg-white/20 text-emerald-100 px-2 py-0.5 rounded-md font-semibold">الملف النشط</span>
-                        <span id="activeFolderName" class="text-lg font-bold"></span>
+                        <span class="text-[10px] md:text-[11px] bg-white/20 text-emerald-100 px-2 py-0.5 rounded-md font-semibold flex-shrink-0">الملف النشط</span>
+                        <span id="activeFolderName" class="text-base md:text-lg font-bold truncate"></span>
                     </div>
-                    <p id="activeFolderStats" class="text-xs text-emerald-100/90 mt-0.5"></p>
+                    <p id="activeFolderStats" class="text-[11px] md:text-xs text-emerald-100/90 mt-0.5"></p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 self-end sm:self-auto">
-                <button onclick="switchTab('files')" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold transition-all">
-                    <i class="fa-solid fa-folder-tree mr-1"></i> عرض كافة الملفات
+            <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+                <button onclick="switchTab('tasks')" class="flex-1 sm:flex-none px-3.5 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-list-check"></i> نافذة المهام
                 </button>
-                <button onclick="clearSelectedFolder()" class="px-3 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-lg text-xs font-bold transition-all shadow-sm">
-                    <i class="fa-solid fa-xmark mr-1"></i> عرض الكل
+                <button onclick="clearSelectedFolder()" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-xmark"></i> عرض الكل
                 </button>
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex justify-center gap-2 md:gap-4 mb-8 border-b border-slate-200 overflow-x-auto">
-            <button onclick="switchTab('tasks')" id="tab-tasks" class="px-5 py-3 font-bold text-brand-600 border-b-2 border-brand-500 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-list-check"></i> المهام
-            </button>
-            <button onclick="switchTab('trusts')" id="tab-trusts" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-hand-holding-heart"></i> الأمانات
-            </button>
-            <button onclick="switchTab('debts')" id="tab-debts" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-money-bill-wave"></i> الديون
-            </button>
-            <button onclick="switchTab('files')" id="tab-files" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-folder-tree"></i> الملفات والمشاريع
-            </button>
+        <!-- Sticky Mobile-Friendly Tabs Navigation -->
+        <div class="sticky top-2 z-40 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-slate-200/80 mb-6">
+            <div class="grid grid-cols-4 gap-1">
+                <button onclick="switchTab('tasks')" id="tab-tasks" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all bg-brand-500 text-white shadow-sm">
+                    <i class="fa-solid fa-list-check text-sm md:text-base"></i>
+                    <span class="truncate">المهام</span>
+                </button>
+                <button onclick="switchTab('trusts')" id="tab-trusts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-hand-holding-heart text-sm md:text-base"></i>
+                    <span class="truncate">الأمانات</span>
+                </button>
+                <button onclick="switchTab('debts')" id="tab-debts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-money-bill-wave text-sm md:text-base"></i>
+                    <span class="truncate">الديون</span>
+                </button>
+                <button onclick="switchTab('files')" id="tab-files" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-folder-tree text-sm md:text-base"></i>
+                    <span class="truncate">الملفات</span>
+                </button>
+            </div>
         </div>
 
         <!-- Datalist for folder autocomplete -->
@@ -519,27 +525,35 @@
             [tasksView, trustsView, debtsView, filesView].forEach(v => v && v.classList.add('hidden'));
             [tabTasks, tabTrusts, tabDebts, tabFiles].forEach(t => {
                 if(t) {
-                    t.classList.remove('text-brand-600', 'border-brand-500');
-                    t.classList.add('text-slate-500', 'border-transparent');
+                    t.classList.remove('bg-brand-500', 'text-white', 'shadow-sm');
+                    t.classList.add('text-slate-600', 'hover:bg-slate-100');
                 }
             });
 
             if (tab === 'tasks') {
-                tasksView.classList.remove('hidden');
-                tabTasks.classList.add('text-brand-600', 'border-brand-500');
-                tabTasks.classList.remove('text-slate-500', 'border-transparent');
+                if(tasksView) tasksView.classList.remove('hidden');
+                if(tabTasks) {
+                    tabTasks.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    tabTasks.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
             } else if (tab === 'trusts') {
-                trustsView.classList.remove('hidden');
-                tabTrusts.classList.add('text-brand-600', 'border-brand-500');
-                tabTrusts.classList.remove('text-slate-500', 'border-transparent');
+                if(trustsView) trustsView.classList.remove('hidden');
+                if(tabTrusts) {
+                    tabTrusts.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    tabTrusts.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
             } else if (tab === 'debts') {
-                debtsView.classList.remove('hidden');
-                tabDebts.classList.add('text-brand-600', 'border-brand-500');
-                tabDebts.classList.remove('text-slate-500', 'border-transparent');
+                if(debtsView) debtsView.classList.remove('hidden');
+                if(tabDebts) {
+                    tabDebts.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    tabDebts.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
             } else if (tab === 'files') {
-                filesView.classList.remove('hidden');
-                tabFiles.classList.add('text-brand-600', 'border-brand-500');
-                tabFiles.classList.remove('text-slate-500', 'border-transparent');
+                if(filesView) filesView.classList.remove('hidden');
+                if(tabFiles) {
+                    tabFiles.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    tabFiles.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
                 renderFolders();
             }
         }
@@ -621,16 +635,27 @@
             if (taskFolderInput) taskFolderInput.value = defaultVal;
             if (trustFolderInput) trustFolderInput.value = defaultVal;
             if (debtFolderInput) debtFolderInput.value = defaultVal;
+
+            // Automatically switch to tasks view if currently on files view
+            const filesView = document.getElementById('files-view');
+            if (filesView && !filesView.classList.contains('hidden')) {
+                switchTab('tasks');
+            }
         }
 
         function clearSelectedFolder() {
             selectFolder('all');
+            switchTab('tasks');
         }
 
         function selectAndOpenFolder(folderName) {
             selectFolder(folderName);
             switchTab('tasks');
             showNotification(`تم فتح ملف "${folderName}" والبدء بالعمل عليه`);
+            const tasksView = document.getElementById('tasks-view');
+            if (tasksView) {
+                tasksView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function updateActiveFolderUI() {
