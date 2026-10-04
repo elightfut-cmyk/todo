@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جدول أعمالي - مصفوفة أيزنهاور</title>
+    <title>منصة التنظيم - المهام والأمانات والديون والملفات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
@@ -25,10 +25,10 @@
                             600: '#16a34a',
                             700: '#15803d',
                         },
-                        urgentImportant: '#fee2e2', // Red
-                        importantNotUrgent: '#dbeafe', // Blue
-                        urgentNotImportant: '#fef3c7', // Yellow
-                        notUrgentNotImportant: '#f3f4f6', // Gray
+                        urgentImportant: '#fee2e2',
+                        importantNotUrgent: '#dbeafe',
+                        urgentNotImportant: '#fef3c7',
+                        notUrgentNotImportant: '#f3f4f6',
                     }
                 }
             }
@@ -42,12 +42,12 @@
         }
         
         .task-card {
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
         }
         
         .task-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
             transform: translateY(-2px);
         }
 
@@ -67,7 +67,7 @@
             width: 1.25rem;
             height: 1.25rem;
             border: 2px solid #cbd5e1;
-            border-radius: 0.25rem;
+            border-radius: 0.35rem;
             outline: none;
             cursor: pointer;
             position: relative;
@@ -92,7 +92,22 @@
             font-size: 0.75rem;
         }
 
-        /* تحسينات للشاشات الصغيرة */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
         @media (max-width: 640px) {
             .matrix-grid {
                 grid-template-columns: 1fr;
@@ -100,15 +115,18 @@
         }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 selection:bg-brand-500 selection:text-white">
+<body class="min-h-screen p-3 md:p-8 selection:bg-brand-500 selection:text-white">
 
     <!-- Auth View -->
-    <div id="auth-container" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 transition-all">
+    <div id="auth-container" class="max-w-md mx-auto mt-16 md:mt-24 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 transition-all">
         <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
             <h1 id="authTitle" class="text-2xl font-bold text-slate-800 mb-2">
-                <i class="fa-solid fa-user-lock text-brand-500 mr-2"></i> تسجيل الدخول
+                تسجيل الدخول
             </h1>
-            <p id="authSubtitle" class="text-slate-500 text-sm">قم بتسجيل الدخول لحفظ وإدارة مهامك</p>
+            <p id="authSubtitle" class="text-slate-500 text-sm">قم بتسجيل الدخول لحفظ وإدارة مهامك وملفاتك</p>
         </div>
         <form id="authForm" class="flex flex-col gap-4">
             <div id="nameContainer" class="hidden">
@@ -126,9 +144,9 @@
                 <input type="password" id="password" required minlength="6" placeholder="••••••••"
                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-left" dir="ltr">
             </div>
-            <div id="authError" class="hidden text-red-500 text-sm mt-2 text-center bg-red-50 p-2 rounded-lg border border-red-100"></div>
+            <div id="authError" class="hidden text-red-500 text-sm mt-2 text-center bg-red-50 p-2.5 rounded-xl border border-red-100"></div>
             <button type="submit" id="authSubmitBtn"
-                class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors mt-2 shadow-sm">
+                class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 px-6 rounded-xl transition-colors mt-2 shadow-sm">
                 تسجيل الدخول
             </button>
             <button type="button" id="toggleAuthModeBtn" onclick="toggleAuthMode()" class="text-sm text-slate-500 hover:text-brand-600 font-medium mt-2 transition-colors">
@@ -139,142 +157,191 @@
 
     <!-- Main App View -->
     <div id="app-container" class="max-w-6xl mx-auto hidden">
-        <header class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 border-b border-slate-200 gap-4">
-            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">
-                <i class="fa-solid fa-layer-group text-brand-500 mr-2"></i> منصة التنظيم
-            </h1>
-            <div class="flex items-center gap-4">
-                <div class="text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full flex items-center gap-2">
-                    <i class="fa-solid fa-user text-slate-400"></i>
-                    <span id="userEmailDisplay" dir="rtl"></span>
+        <header class="flex flex-col md:flex-row items-center justify-between mb-6 pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2">
+                    <span class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl shadow-xs">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </span>
+                    منصة التنظيم
+                </h1>
+                <p class="text-xs text-slate-400 mt-1">تنظيم المهام، الأمانات، والديون حسب الملفات والمشاريع</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-sm text-slate-600 bg-white border border-slate-200 px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-2xs">
+                    <i class="fa-solid fa-circle-user text-brand-500"></i>
+                    <span id="userEmailDisplay" dir="rtl" class="font-medium"></span>
                 </div>
-                <button onclick="logout()" class="text-slate-500 hover:text-red-500 transition-colors flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                <button onclick="logout()" class="text-slate-500 hover:text-red-500 transition-colors flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs text-sm font-medium">
                     <i class="fa-solid fa-right-from-bracket"></i> خروج
                 </button>
             </div>
         </header>
 
+        <!-- Quick Files Bar -->
+        <div class="mb-4 bg-white p-3 md:p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 overflow-x-auto w-full pb-1 md:pb-0 custom-scrollbar" id="folderChipsContainer">
+                <!-- Dynamically populated chips -->
+            </div>
+        </div>
+
+        <!-- Active Folder Banner -->
+        <div id="activeFolderBanner" class="hidden mb-6 bg-gradient-to-l from-emerald-600 to-teal-600 text-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl text-white shadow-inner">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] bg-white/20 text-emerald-100 px-2 py-0.5 rounded-md font-semibold">الملف النشط</span>
+                        <span id="activeFolderName" class="text-lg font-bold"></span>
+                    </div>
+                    <p id="activeFolderStats" class="text-xs text-emerald-100/90 mt-0.5"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button onclick="switchTab('files')" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold transition-all">
+                    <i class="fa-solid fa-folder-tree mr-1"></i> عرض كافة الملفات
+                </button>
+                <button onclick="clearSelectedFolder()" class="px-3 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-lg text-xs font-bold transition-all shadow-sm">
+                    <i class="fa-solid fa-xmark mr-1"></i> عرض الكل
+                </button>
+            </div>
+        </div>
+
         <!-- Tabs -->
-        <div class="flex justify-center gap-4 mb-8 border-b border-slate-200">
-            <button onclick="switchTab('tasks')" id="tab-tasks" class="px-6 py-3 font-semibold text-brand-600 border-b-2 border-brand-500 hover:bg-slate-50 transition-colors flex items-center gap-2">
+        <div class="flex justify-center gap-2 md:gap-4 mb-8 border-b border-slate-200 overflow-x-auto">
+            <button onclick="switchTab('tasks')" id="tab-tasks" class="px-5 py-3 font-bold text-brand-600 border-b-2 border-brand-500 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-list-check"></i> المهام
             </button>
-            <button onclick="switchTab('trusts')" id="tab-trusts" class="px-6 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+            <button onclick="switchTab('trusts')" id="tab-trusts" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-hand-holding-heart"></i> الأمانات
             </button>
-            <button onclick="switchTab('debts')" id="tab-debts" class="px-6 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+            <button onclick="switchTab('debts')" id="tab-debts" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-money-bill-wave"></i> الديون
             </button>
+            <button onclick="switchTab('files')" id="tab-files" class="px-5 py-3 font-semibold text-slate-500 border-b-2 border-transparent hover:text-brand-600 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-folder-tree"></i> الملفات والمشاريع
+            </button>
         </div>
+
+        <!-- Datalist for folder autocomplete -->
+        <datalist id="folderDatalist"></datalist>
 
         <!-- Tasks View -->
         <div id="tasks-view">
-        <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
-            <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة مهمة جديدة</h2>
-            <form id="taskForm" class="flex flex-col md:flex-row gap-4">
-                <div class="flex-grow">
-                    <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟" required
-                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
-                </div>
-                <div class="flex-shrink-0 w-full md:w-auto">
-                    <select id="categorySelect" required
-                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 cursor-pointer appearance-none">
-                        <option value="ui">مهم وعاجل (افعلها الآن)</option>
-                        <option value="in">مهم وغير عاجل (خطط لها)</option>
-                        <option value="un">غير مهم وعاجل (فوّضها)</option>
-                        <option value="nn">غير مهم وغير عاجل (اتركها)</option>
-                    </select>
-                </div>
-                <button type="submit"
-                    class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-plus"></i> إضافة
-                </button>
-            </form>
-        </div>
+            <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
+                <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة مهمة جديدة
+                </h2>
+                <form id="taskForm" class="flex flex-col md:flex-row gap-3">
+                    <div class="flex-grow">
+                        <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟ (مثال: إضافة فيديوهات)" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
+                    </div>
+                    <div class="flex-shrink-0 w-full md:w-56">
+                        <input type="text" id="taskFolderInput" list="folderDatalist" placeholder="الملف (مثلاً: منصة جيبها)"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 text-sm">
+                    </div>
+                    <div class="flex-shrink-0 w-full md:w-auto">
+                        <select id="categorySelect" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 cursor-pointer appearance-none">
+                            <option value="ui">مهم وعاجل (افعلها الآن)</option>
+                            <option value="in">مهم وغير عاجل (خطط لها)</option>
+                            <option value="un">غير مهم وعاجل (فوّضها)</option>
+                            <option value="nn">غير مهم وغير عاجل (اتركها)</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> إضافة
+                    </button>
+                </form>
+            </div>
 
-        <div class="matrix-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="matrix-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- مربع 1: مهم وعاجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-red-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500">
+                            <i class="fa-solid fa-fire text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">مهم وعاجل</h3>
+                            <p class="text-xs text-slate-500">افعلها الآن (أزمات، مواعيد نهائية)</p>
+                        </div>
+                    </div>
+                    <ul id="list-ui" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'ui')">
+                    </ul>
+                </div>
+
+                <!-- مربع 2: مهم وغير عاجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-blue-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                            <i class="fa-solid fa-calendar-check text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">مهم وغير عاجل</h3>
+                            <p class="text-xs text-slate-500">خطط لها (أهداف، تطوير)</p>
+                        </div>
+                    </div>
+                    <ul id="list-in" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'in')">
+                    </ul>
+                </div>
+
+                <!-- مربع 3: غير مهم وعاجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-yellow-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                            <i class="fa-solid fa-users text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">غير مهم وعاجل</h3>
+                            <p class="text-xs text-slate-500">فوّضها (مقاطعات، بعض الاجتماعات)</p>
+                        </div>
+                    </div>
+                    <ul id="list-un" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'un')">
+                    </ul>
+                </div>
+
+                <!-- مربع 4: غير مهم وغير عاجل -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-gray-400 shadow-sm flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                            <i class="fa-solid fa-trash-can text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">غير مهم وغير عاجل</h3>
+                            <p class="text-xs text-slate-500">اتركها (مضيعات الوقت)</p>
+                        </div>
+                    </div>
+                    <ul id="list-nn" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'nn')">
+                    </ul>
+                </div>
+            </div>
             
-            <!-- مربع 1: مهم وعاجل -->
-            <div class="bg-white rounded-2xl p-5 border-t-4 border-red-400 shadow-sm flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500">
-                        <i class="fa-solid fa-fire text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">مهم وعاجل</h3>
-                        <p class="text-xs text-slate-500">افعلها الآن (أزمات، مواعيد نهائية)</p>
-                    </div>
-                </div>
-                <ul id="list-ui" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'ui')">
-                    <!-- المهام ستضاف هنا -->
-                </ul>
+            <div class="mt-8 text-center flex flex-col items-center gap-4">
+                <button onclick="clearAllData()" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span id="clearTasksLabel">مسح المهام المعروضة</span>
+                </button>
             </div>
-
-            <!-- مربع 2: مهم وغير عاجل -->
-            <div class="bg-white rounded-2xl p-5 border-t-4 border-blue-400 shadow-sm flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-                        <i class="fa-solid fa-calendar-check text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">مهم وغير عاجل</h3>
-                        <p class="text-xs text-slate-500">خطط لها (أهداف، تطوير)</p>
-                    </div>
-                </div>
-                <ul id="list-in" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'in')">
-                    <!-- المهام ستضاف هنا -->
-                </ul>
-            </div>
-
-            <!-- مربع 3: غير مهم وعاجل -->
-            <div class="bg-white rounded-2xl p-5 border-t-4 border-yellow-400 shadow-sm flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-                        <i class="fa-solid fa-users text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">غير مهم وعاجل</h3>
-                        <p class="text-xs text-slate-500">فوّضها (مقاطعات، بعض الاجتماعات)</p>
-                    </div>
-                </div>
-                <ul id="list-un" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'un')">
-                    <!-- المهام ستضاف هنا -->
-                </ul>
-            </div>
-
-            <!-- مربع 4: غير مهم وغير عاجل -->
-            <div class="bg-white rounded-2xl p-5 border-t-4 border-gray-400 shadow-sm flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                        <i class="fa-solid fa-trash-can text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">غير مهم وغير عاجل</h3>
-                        <p class="text-xs text-slate-500">اتركها (مضيعات الوقت)</p>
-                    </div>
-                </div>
-                <ul id="list-nn" class="space-y-3 flex-grow overflow-y-auto max-h-96 pr-2 custom-scrollbar" ondragover="allowDrop(event)" ondrop="drop(event, 'nn')">
-                    <!-- المهام ستضاف هنا -->
-                </ul>
-            </div>
-
-        </div>
-        
-        <div class="mt-8 text-center flex flex-col items-center gap-4">
-            <button onclick="clearAllData()" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> مسح جميع المهام
-            </button>
-        </div>
         </div>
 
         <!-- Trusts View -->
         <div id="trusts-view" class="hidden">
             <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
-                <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة أمانة جديدة</h2>
-                <form id="trustForm" class="flex flex-col md:flex-row gap-4">
+                <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة أمانة جديدة
+                </h2>
+                <form id="trustForm" class="flex flex-col md:flex-row gap-3">
                     <div class="flex-grow">
                         <input type="text" id="trustInput" placeholder="ما هي الأمانة؟" required
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
+                    </div>
+                    <div class="flex-shrink-0 w-full md:w-56">
+                        <input type="text" id="trustFolderInput" list="folderDatalist" placeholder="الملف (مثلاً: منصة جيبها)"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 text-sm">
                     </div>
                     <div class="flex-shrink-0 w-full md:w-auto">
                         <select id="trustCategorySelect" required
@@ -285,7 +352,7 @@
                         </select>
                     </div>
                     <button type="submit"
-                        class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
+                        class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> إضافة
                     </button>
                 </form>
@@ -338,12 +405,10 @@
             
             <div class="mt-8 text-center flex flex-col items-center gap-4">
                 <button onclick="clearAllTrusts()" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
-                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> مسح جميع الأمانات
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span id="clearTrustsLabel">مسح الأمانات المعروضة</span>
                 </button>
             </div>
         </div>
-
-    </div>
 
         <!-- Debts View -->
         <div id="debts-view" class="hidden">
@@ -369,22 +434,28 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
-                <h2 class="text-lg font-semibold mb-4 text-slate-700">إضافة دين جديد</h2>
-                <form id="debtForm" class="flex flex-col md:flex-row gap-4">
+                <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة دين جديد
+                </h2>
+                <form id="debtForm" class="flex flex-col md:flex-row gap-3">
                     <div class="flex-grow">
-                        <input type="text" id="debtCreditor" placeholder="اسم الدائن" required
+                        <input type="text" id="debtCreditor" placeholder="اسم الدائن أو الغرض" required
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700">
                     </div>
-                    <div class="w-full md:w-40 flex-shrink-0">
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <input type="text" id="debtFolderInput" list="folderDatalist" placeholder="الملف (مثلاً: منصة جيبها)"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700 text-sm">
+                    </div>
+                    <div class="w-full md:w-36 flex-shrink-0">
                         <input type="number" id="debtAmount" placeholder="المبلغ" required min="0" step="0.01"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700" dir="ltr">
                     </div>
-                    <div class="w-full md:w-48 flex-shrink-0">
+                    <div class="w-full md:w-44 flex-shrink-0">
                         <input type="date" id="debtDueDate" required
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700 text-right">
                     </div>
                     <button type="submit"
-                        class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
+                        class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> إضافة
                     </button>
                 </form>
@@ -398,6 +469,27 @@
                 </ul>
             </div>
         </div>
+
+        <!-- Files / Projects View -->
+        <div id="files-view" class="hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-tree text-brand-500"></i> الملفات والمشاريع
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">نظم مهامك وأماناتك وديونك تحت ملفات مستقلة (مثل: منصة جيبها)</p>
+                </div>
+                <button onclick="showCreateFolderModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-5 rounded-xl transition-all shadow-sm flex items-center gap-2 self-start sm:self-auto">
+                    <i class="fa-solid fa-folder-plus"></i> إنشاء ملف جديد
+                </button>
+            </div>
+
+            <!-- Files Grid -->
+            <div id="filesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic cards -->
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -405,17 +497,27 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuaWx2bnJxem9zZ253enBsc2diIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDcxMDk4OCwiZXhwIjoyMTA2Mjg2OTg4fQ.kFshuk5wm9cXMG7F0WqnCXbI_boXG5kTPNVTijBKntE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // State Management
+        let currentUser = null;
+        let tasks = [];
+        let trusts = [];
+        let debts = [];
+        let customFolders = [];
+        let selectedFolder = 'all'; // 'all' | '__general__' | 'folderName'
+
         function switchTab(tab) {
             const tasksView = document.getElementById('tasks-view');
             const trustsView = document.getElementById('trusts-view');
             const debtsView = document.getElementById('debts-view');
+            const filesView = document.getElementById('files-view');
             
             const tabTasks = document.getElementById('tab-tasks');
             const tabTrusts = document.getElementById('tab-trusts');
             const tabDebts = document.getElementById('tab-debts');
+            const tabFiles = document.getElementById('tab-files');
             
-            [tasksView, trustsView, debtsView].forEach(v => v && v.classList.add('hidden'));
-            [tabTasks, tabTrusts, tabDebts].forEach(t => {
+            [tasksView, trustsView, debtsView, filesView].forEach(v => v && v.classList.add('hidden'));
+            [tabTasks, tabTrusts, tabDebts, tabFiles].forEach(t => {
                 if(t) {
                     t.classList.remove('text-brand-600', 'border-brand-500');
                     t.classList.add('text-slate-500', 'border-transparent');
@@ -434,16 +536,543 @@
                 debtsView.classList.remove('hidden');
                 tabDebts.classList.add('text-brand-600', 'border-brand-500');
                 tabDebts.classList.remove('text-slate-500', 'border-transparent');
+            } else if (tab === 'files') {
+                filesView.classList.remove('hidden');
+                tabFiles.classList.add('text-brand-600', 'border-brand-500');
+                tabFiles.classList.remove('text-slate-500', 'border-transparent');
+                renderFolders();
             }
         }
 
-        // التهيئة وقراءة البيانات
-        let currentUser = null;
+        // --- Folders Logic ---
+        function parseFolderAndText(rawText) {
+            if (!rawText) return { folder: '', text: '' };
+            const str = String(rawText).trim();
+            const match = str.match(/^\[(?:ملف:\s*|📁\s*)?([^\]]+)\]\s*(.*)$/s);
+            if (match) {
+                return {
+                    folder: match[1].trim(),
+                    text: match[2].trim()
+                };
+            }
+            return {
+                folder: '',
+                text: str
+            };
+        }
 
+        function formatWithFolder(text, folder) {
+            const trimmedFolder = (folder || '').replace(/[\[\]]/g, '').trim();
+            const parsed = parseFolderAndText(text);
+            const finalFolder = trimmedFolder || parsed.folder;
+            const finalText = parsed.text || text.trim();
+            if (!finalFolder) return finalText;
+            return `[ملف: ${finalFolder}] ${finalText}`;
+        }
+
+        function loadCustomFolders() {
+            if (!currentUser) return;
+            try {
+                const stored = localStorage.getItem(`folders_${currentUser.id}`);
+                customFolders = stored ? JSON.parse(stored) : [];
+            } catch(e) {
+                customFolders = [];
+            }
+        }
+
+        function saveCustomFolders() {
+            if (!currentUser) return;
+            localStorage.setItem(`folders_${currentUser.id}`, JSON.stringify(customFolders));
+        }
+
+        function getAllFolders() {
+            const set = new Set();
+            customFolders.forEach(f => { if(f && f.trim()) set.add(f.trim()); });
+            tasks.forEach(t => { if (t.folder) set.add(t.folder.trim()); });
+            trusts.forEach(t => { if (t.folder) set.add(t.folder.trim()); });
+            debts.forEach(d => { if (d.folder) set.add(d.folder.trim()); });
+            return Array.from(set).filter(Boolean).sort();
+        }
+
+        function updateFolderDatalist() {
+            let datalist = document.getElementById('folderDatalist');
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = 'folderDatalist';
+                document.body.appendChild(datalist);
+            }
+            const folders = getAllFolders();
+            datalist.innerHTML = folders.map(f => `<option value="${escapeHTML(f)}"></option>`).join('');
+        }
+
+        function selectFolder(folderName) {
+            selectedFolder = folderName;
+            updateActiveFolderUI();
+            renderFolderChips();
+            renderTasks();
+            renderTrusts();
+            renderDebts();
+            
+            // Sync default value in forms
+            const defaultVal = (folderName === 'all' || folderName === '__general__') ? '' : folderName;
+            const taskFolderInput = document.getElementById('taskFolderInput');
+            const trustFolderInput = document.getElementById('trustFolderInput');
+            const debtFolderInput = document.getElementById('debtFolderInput');
+            if (taskFolderInput) taskFolderInput.value = defaultVal;
+            if (trustFolderInput) trustFolderInput.value = defaultVal;
+            if (debtFolderInput) debtFolderInput.value = defaultVal;
+        }
+
+        function clearSelectedFolder() {
+            selectFolder('all');
+        }
+
+        function selectAndOpenFolder(folderName) {
+            selectFolder(folderName);
+            switchTab('tasks');
+            showNotification(`تم فتح ملف "${folderName}" والبدء بالعمل عليه`);
+        }
+
+        function updateActiveFolderUI() {
+            const banner = document.getElementById('activeFolderBanner');
+            const nameEl = document.getElementById('activeFolderName');
+            const statsEl = document.getElementById('activeFolderStats');
+            const clearTasksLabel = document.getElementById('clearTasksLabel');
+            const clearTrustsLabel = document.getElementById('clearTrustsLabel');
+            
+            if (!banner) return;
+
+            if (selectedFolder === 'all') {
+                banner.classList.add('hidden');
+                if (clearTasksLabel) clearTasksLabel.textContent = 'مسح جميع المهام';
+                if (clearTrustsLabel) clearTrustsLabel.textContent = 'مسح جميع الأمانات';
+            } else if (selectedFolder === '__general__') {
+                banner.classList.remove('hidden');
+                nameEl.textContent = 'عناصر بدون ملف (عام)';
+                const taskCount = tasks.filter(t => !t.folder).length;
+                const trustCount = trusts.filter(t => !t.folder).length;
+                const debtCount = debts.filter(d => !d.folder).length;
+                statsEl.textContent = `${taskCount} مهام · ${trustCount} أمانات · ${debtCount} ديون`;
+                if (clearTasksLabel) clearTasksLabel.textContent = 'مسح المهام العامة فقط';
+                if (clearTrustsLabel) clearTrustsLabel.textContent = 'مسح الأمانات العامة فقط';
+            } else {
+                banner.classList.remove('hidden');
+                nameEl.textContent = selectedFolder;
+                const taskCount = tasks.filter(t => t.folder === selectedFolder).length;
+                const trustCount = trusts.filter(t => t.folder === selectedFolder).length;
+                const debtCount = debts.filter(d => d.folder === selectedFolder).length;
+                statsEl.textContent = `${taskCount} مهام · ${trustCount} أمانات · ${debtCount} ديون`;
+                if (clearTasksLabel) clearTasksLabel.textContent = `مسح مهام ملف "${selectedFolder}" فقط`;
+                if (clearTrustsLabel) clearTrustsLabel.textContent = `مسح أمانات ملف "${selectedFolder}" فقط`;
+            }
+        }
+
+        function renderFolderChips() {
+            const container = document.getElementById('folderChipsContainer');
+            if (!container) return;
+            
+            const folders = getAllFolders();
+            const totalItems = tasks.length + trusts.length + debts.length;
+            const generalCount = tasks.filter(t => !t.folder).length + trusts.filter(t => !t.folder).length + debts.filter(d => !d.folder).length;
+
+            let html = `
+                <div class="flex items-center gap-1.5 flex-shrink-0 text-xs font-bold text-slate-400 pl-1">
+                    <i class="fa-solid fa-folder-tree"></i> الملفات:
+                </div>
+                <button onclick="selectFolder('all')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${selectedFolder === 'all' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                    <i class="fa-solid fa-border-all text-[11px]"></i> الكل <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${totalItems}</span>
+                </button>
+            `;
+
+            if (generalCount > 0) {
+                html += `
+                    <button onclick="selectFolder('__general__')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 ${selectedFolder === '__general__' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                        <i class="fa-regular fa-file text-[11px]"></i> عام <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${generalCount}</span>
+                    </button>
+                `;
+            }
+
+            folders.forEach(f => {
+                const count = tasks.filter(t => t.folder === f).length + trusts.filter(t => t.folder === f).length + debts.filter(d => d.folder === f).length;
+                const isActive = selectedFolder === f;
+                html += `
+                    <button onclick="selectFolder('${escapeHTML(f)}')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                        <i class="fa-solid fa-folder text-[11px] ${isActive ? 'text-white' : 'text-brand-500'}"></i> ${escapeHTML(f)} <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${count}</span>
+                    </button>
+                `;
+            });
+
+            html += `
+                <button onclick="showCreateFolderModal()" class="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold text-brand-600 hover:bg-brand-50 border border-dashed border-brand-300 transition-all flex items-center gap-1">
+                    <i class="fa-solid fa-plus text-[10px]"></i> ملف جديد
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderFolders() {
+            const grid = document.getElementById('filesGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            const folders = getAllFolders();
+            
+            if (folders.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 p-8 shadow-sm">
+                        <div class="w-20 h-20 bg-brand-50 text-brand-500 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">لا توجد ملفات أو مشاريع مخصصة بعد</h3>
+                        <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">يمكنك إنشاء ملف مخصص مثل <span class="font-bold text-slate-700">"منصة جيبها"</span> لتنظيم مهامك وأماناتك وديونك تحته وكتابة ما تريده بسهولة!</p>
+                        <button onclick="showCreateFolderModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm inline-flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> إنشاء أول ملف الآن
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            folders.forEach(name => {
+                const folderTasks = tasks.filter(t => t.folder === name);
+                const folderTrusts = trusts.filter(t => t.folder === name);
+                const folderDebts = debts.filter(d => d.folder === name);
+                
+                const taskTotal = folderTasks.length;
+                const taskCompleted = folderTasks.filter(t => t.completed).length;
+                const trustTotal = folderTrusts.length;
+                const debtTotal = folderDebts.length;
+                const debtRemaining = folderDebts.filter(d => !d.completed).reduce((sum, d) => sum + (d.amount || 0), 0);
+                
+                const totalItems = taskTotal + trustTotal + debtTotal;
+                const progressPct = taskTotal > 0 ? Math.round((taskCompleted / taskTotal) * 100) : 0;
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform shadow-xs">
+                                <i class="fa-solid fa-folder-closed"></i>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="renameFolderPrompt('${escapeHTML(name)}')" title="إعادة تسمية" class="text-slate-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 transition-colors">
+                                    <i class="fa-solid fa-pen text-sm"></i>
+                                </button>
+                                <button onclick="deleteFolderPrompt('${escapeHTML(name)}')" title="حذف الملف" class="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            ${escapeHTML(name)}
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">${totalItems} عنصر مسجل في هذا الملف</p>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-list-check text-brand-500"></i> المهام</span>
+                                <span class="font-bold">${taskCompleted} من ${taskTotal} منجزة</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-heart text-amber-500"></i> الأمانات</span>
+                                <span class="font-bold">${trustTotal}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-red-500"></i> الديون المتبقية</span>
+                                <span class="font-bold">${debtRemaining.toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        ${taskTotal > 0 ? `
+                        <div class="mb-5">
+                            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
+                                <span>نسبة إنجاز المهام</span>
+                                <span class="font-bold text-brand-600">${progressPct}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div class="bg-brand-500 h-2 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                            </div>
+                        </div>
+                        ` : '<div class="mb-5"></div>'}
+                    </div>
+
+                    <button onclick="selectAndOpenFolder('${escapeHTML(name)}')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-brand-500 hover:text-white text-slate-700 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 group-hover:bg-brand-500 group-hover:text-white shadow-2xs">
+                        <i class="fa-solid fa-folder-open"></i> فتح الملف والبدء بالعمل
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showCreateFolderModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6">
+                        <div class="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-brand-600 text-2xl shadow-inner">
+                            <i class="fa-solid fa-folder-plus"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1 text-center">إنشاء ملف / مشروع جديد</h3>
+                        <p class="text-xs text-slate-500 mb-5 text-center">اكتب اسم الملف لتنظيم المهام والأمانات والديون تحته</p>
+                        <input type="text" id="newFolderNameInput" placeholder="مثلاً: منصة جيبها" 
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 mb-5 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                        <div class="flex gap-3">
+                            <button id="cancelCreateBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
+                            <button id="confirmCreateBtn" class="flex-1 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold transition-colors shadow-sm">إنشاء ودخول</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            const input = modal.querySelector('#newFolderNameInput');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                input.focus();
+            });
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+            modal.querySelector('#cancelCreateBtn').onclick = closeModal;
+            modal.querySelector('#confirmCreateBtn').onclick = () => {
+                const name = input.value.replace(/[\[\]]/g, '').trim();
+                if (name) {
+                    if (!customFolders.includes(name)) {
+                        customFolders.push(name);
+                        saveCustomFolders();
+                    }
+                    selectFolder(name);
+                    updateFolderDatalist();
+                    renderFolders();
+                    renderFolderChips();
+                    showNotification(`تم إنشاء ملف "${name}" والدخول إليه`);
+                    closeModal();
+                    switchTab('tasks');
+                }
+            };
+            input.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') modal.querySelector('#confirmCreateBtn').click();
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+
+        function renameFolderPrompt(oldName) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-1">تعديل اسم الملف</h3>
+                        <p class="text-xs text-slate-500 mb-4">سيتم تحديث كافة المهام والأمانات والديون المرتبطة بهذا الملف</p>
+                        <input type="text" id="renameFolderInput" value="${escapeHTML(oldName)}"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 mb-5 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                        <div class="flex gap-3">
+                            <button id="cancelRenameBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
+                            <button id="saveRenameBtn" class="flex-1 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold transition-colors shadow-sm">تأكيد التعديل</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            const input = modal.querySelector('#renameFolderInput');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                input.focus();
+                input.select();
+            });
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+            modal.querySelector('#cancelRenameBtn').onclick = closeModal;
+            modal.querySelector('#saveRenameBtn').onclick = async () => {
+                const newName = input.value.replace(/[\[\]]/g, '').trim();
+                if (newName && newName !== oldName) {
+                    closeModal();
+                    await renameFolder(oldName, newName);
+                } else {
+                    closeModal();
+                }
+            };
+        }
+
+        async function renameFolder(oldName, newName) {
+            showNotification('جاري تحديث اسم الملف...');
+            customFolders = customFolders.map(f => f === oldName ? newName : f);
+            if (!customFolders.includes(newName)) customFolders.push(newName);
+            saveCustomFolders();
+
+            for (const t of tasks) {
+                if (t.folder === oldName) {
+                    t.folder = newName;
+                    t.rawText = formatWithFolder(t.text, newName);
+                    await supabaseClient.from('tasks').update({ text: t.rawText }).eq('id', t.id);
+                }
+            }
+
+            for (const tr of trusts) {
+                if (tr.folder === oldName) {
+                    tr.folder = newName;
+                    tr.rawText = formatWithFolder(tr.text, newName);
+                    await supabaseClient.from('trusts').update({ text: tr.rawText }).eq('id', tr.id);
+                }
+            }
+
+            for (const d of debts) {
+                if (d.folder === oldName) {
+                    d.folder = newName;
+                    d.rawCreditor = formatWithFolder(d.creditor_name, newName);
+                    await supabaseClient.from('debts').update({ creditor_name: d.rawCreditor }).eq('id', d.id);
+                }
+            }
+
+            if (selectedFolder === oldName) {
+                selectedFolder = newName;
+            }
+
+            updateFolderDatalist();
+            renderFolderChips();
+            renderFolders();
+            renderTasks();
+            renderTrusts();
+            renderDebts();
+            updateActiveFolderUI();
+            showNotification(`تم تغيير اسم الملف إلى "${newName}"`);
+        }
+
+        function deleteFolderPrompt(folderName) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            
+            const taskCount = tasks.filter(t => t.folder === folderName).length;
+            const trustCount = trusts.filter(t => t.folder === folderName).length;
+            const debtCount = debts.filter(d => d.folder === folderName).length;
+            const total = taskCount + trustCount + debtCount;
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6 text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl">
+                            <i class="fa-solid fa-folder-minus"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1">حذف ملف "${escapeHTML(folderName)}"</h3>
+                        <p class="text-slate-600 text-sm mb-5">يحتوي هذا الملف على ${total} عنصر (${taskCount} مهام، ${trustCount} أمانات، ${debtCount} ديون).</p>
+                        <div class="flex flex-col gap-2.5 mb-5 text-right">
+                            <button id="deleteFolderOnlyBtn" class="w-full py-3 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl font-medium text-xs transition-colors flex items-center gap-2 border border-slate-200">
+                                <i class="fa-solid fa-unlink text-slate-400 text-sm"></i>
+                                <span>حذف الملف فقط (فك ارتباط العناصر وجعلها عامة)</span>
+                            </button>
+                            <button id="deleteAllBtn" class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition-colors flex items-center gap-2 border border-red-200">
+                                <i class="fa-solid fa-trash text-red-500 text-sm"></i>
+                                <span>حذف الملف مع كافة محتوياته نهائياً</span>
+                            </button>
+                        </div>
+                        <button id="cancelDeleteFolderBtn" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-medium text-sm transition-colors">إلغاء</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            });
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#cancelDeleteFolderBtn').onclick = closeModal;
+
+            modal.querySelector('#deleteFolderOnlyBtn').onclick = async () => {
+                closeModal();
+                await deleteFolder(folderName, false);
+            };
+
+            modal.querySelector('#deleteAllBtn').onclick = async () => {
+                closeModal();
+                await deleteFolder(folderName, true);
+            };
+        }
+
+        async function deleteFolder(folderName, deleteContents) {
+            showNotification('جاري حذف الملف...');
+            customFolders = customFolders.filter(f => f !== folderName);
+            saveCustomFolders();
+
+            if (deleteContents) {
+                const toDeleteTasks = tasks.filter(t => t.folder === folderName);
+                tasks = tasks.filter(t => t.folder !== folderName);
+                for (const t of toDeleteTasks) {
+                    await supabaseClient.from('tasks').delete().eq('id', t.id);
+                }
+
+                const toDeleteTrusts = trusts.filter(t => t.folder === folderName);
+                trusts = trusts.filter(t => t.folder !== folderName);
+                for (const tr of toDeleteTrusts) {
+                    await supabaseClient.from('trusts').delete().eq('id', tr.id);
+                }
+
+                const toDeleteDebts = debts.filter(d => d.folder === folderName);
+                debts = debts.filter(d => d.folder !== folderName);
+                for (const d of toDeleteDebts) {
+                    await supabaseClient.from('debts').delete().eq('id', d.id);
+                }
+            } else {
+                for (const t of tasks) {
+                    if (t.folder === folderName) {
+                        t.folder = '';
+                        t.rawText = t.text;
+                        await supabaseClient.from('tasks').update({ text: t.text }).eq('id', t.id);
+                    }
+                }
+                for (const tr of trusts) {
+                    if (tr.folder === folderName) {
+                        tr.folder = '';
+                        tr.rawText = tr.text;
+                        await supabaseClient.from('trusts').update({ text: tr.text }).eq('id', tr.id);
+                    }
+                }
+                for (const d of debts) {
+                    if (d.folder === folderName) {
+                        d.folder = '';
+                        d.rawCreditor = d.creditor_name;
+                        await supabaseClient.from('debts').update({ creditor_name: d.creditor_name }).eq('id', d.id);
+                    }
+                }
+            }
+
+            if (selectedFolder === folderName) {
+                selectedFolder = 'all';
+            }
+
+            updateFolderDatalist();
+            renderFolderChips();
+            renderFolders();
+            renderTasks();
+            renderTrusts();
+            renderDebts();
+            updateActiveFolderUI();
+            showNotification(`تم حذف ملف "${folderName}"`);
+        }
+
+        // --- Init & Auth ---
         document.addEventListener('DOMContentLoaded', async () => {
             setupForm();
             setupTrustForm();
-            if(typeof setupDebtForm === 'function') setupDebtForm();
+            setupDebtForm();
             setupAuth();
 
             const taskOptions = {
@@ -501,11 +1130,9 @@
             new Sortable(document.getElementById('list-trust-medium'), trustOptions);
             new Sortable(document.getElementById('list-trust-deferred'), trustOptions);
 
-            // التحقق من الجلسة الحالية
             const { data: { session } } = await supabaseClient.auth.getSession();
             handleAuthChange(session);
 
-            // الاستماع لتغيرات حالة المصادقة
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 handleAuthChange(session);
             });
@@ -516,14 +1143,14 @@
         function setupRealtime() {
             supabaseClient
                 .channel('schema-db-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
                     loadTasks();
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'trusts' }, (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'trusts' }, () => {
                     loadTrusts();
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, (payload) => {
-                    if(typeof loadDebts === 'function') loadDebts();
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
+                    loadDebts();
                 })
                 .subscribe();
         }
@@ -566,18 +1193,22 @@
                 document.getElementById('userEmailDisplay').textContent = displayName;
                 authContainer.classList.add('hidden');
                 appContainer.classList.remove('hidden');
+                loadCustomFolders();
                 loadTasks();
                 loadTrusts();
-                if(typeof loadDebts === 'function') loadDebts();
+                loadDebts();
             } else {
                 currentUser = null;
                 tasks = [];
                 trusts = [];
-                if(typeof renderTasks === 'function') {
-                    renderTasks();
-                    renderTrusts();
-                    if(typeof renderDebts === 'function') { debts = []; renderDebts(); }
-                }
+                debts = [];
+                customFolders = [];
+                selectedFolder = 'all';
+                renderTasks();
+                renderTrusts();
+                renderDebts();
+                renderFolderChips();
+                renderFolders();
                 authContainer.classList.remove('hidden');
                 appContainer.classList.add('hidden');
             }
@@ -631,6 +1262,7 @@
             await supabaseClient.auth.signOut();
         }
 
+        // Sound Effects
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -658,10 +1290,7 @@
             }
         }
 
-        // مصفوفة لتخزين المهام
-        let tasks = [];
-
-        // إعداد نموذج الإضافة
+        // --- Tasks Logic ---
         function setupForm() {
             const form = document.getElementById('taskForm');
             form.addEventListener('submit', async function(e) {
@@ -669,24 +1298,37 @@
                 
                 const taskInput = document.getElementById('taskInput');
                 const categorySelect = document.getElementById('categorySelect');
+                const folderInput = document.getElementById('taskFolderInput');
                 
                 const text = taskInput.value.trim();
                 const category = categorySelect.value;
+                const folder = folderInput ? folderInput.value.trim() : '';
                 
                 if (text) {
-                    await addTask(text, category);
-                    taskInput.value = ''; // تفريغ الحقل
-                    taskInput.focus(); // إعادة التركيز
+                    await addTask(text, category, folder);
+                    taskInput.value = '';
+                    if (selectedFolder === 'all' || selectedFolder === '__general__') {
+                        if (folderInput) folderInput.value = '';
+                    }
+                    taskInput.focus();
                 }
             });
         }
 
-        // دالة إضافة مهمة جديدة
-        async function addTask(text, category) {
+        async function addTask(text, category, folder = '') {
             if (!currentUser) return;
+            const finalFolder = (folder || (selectedFolder !== 'all' && selectedFolder !== '__general__' ? selectedFolder : '')).replace(/[\[\]]/g, '').trim();
+            if (finalFolder && !customFolders.includes(finalFolder)) {
+                customFolders.push(finalFolder);
+                saveCustomFolders();
+            }
+            const formatted = formatWithFolder(text, finalFolder);
+            const parsed = parseFolderAndText(formatted);
             const newTask = {
                 id: Date.now().toString(),
-                text: text,
+                rawText: formatted,
+                text: parsed.text,
+                folder: parsed.folder,
                 category: category,
                 completed: false,
                 createdAt: new Date().toISOString()
@@ -694,11 +1336,15 @@
             
             tasks.push(newTask);
             renderTasks();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             showNotification('تم إضافة المهمة بنجاح');
             
             const { error } = await supabaseClient.from('tasks').insert([{
                 id: newTask.id,
-                text: newTask.text,
+                text: newTask.rawText,
                 category: newTask.category,
                 completed: newTask.completed,
                 created_at: newTask.createdAt,
@@ -708,13 +1354,13 @@
             if (error) console.error("Error adding task:", error);
         }
 
-        // دالة تبديل حالة المهمة (مكتملة / غير مكتملة)
         async function toggleTaskStatus(id) {
             const taskIndex = tasks.findIndex(t => t.id === id);
             if (taskIndex !== -1) {
                 tasks[taskIndex].completed = !tasks[taskIndex].completed;
                 if (tasks[taskIndex].completed) playSound('complete');
                 renderTasks();
+                renderFolders();
                 
                 await supabaseClient
                     .from('tasks')
@@ -723,36 +1369,43 @@
             }
         }
 
-        // دالة حذف مهمة
         async function deleteTask(id) {
             tasks = tasks.filter(t => t.id !== id);
             renderTasks();
-            
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             await supabaseClient.from('tasks').delete().eq('id', id);
         }
 
-        // تحميل المهام من Supabase
         async function loadTasks() {
             if (!currentUser) return;
             const { data, error } = await supabaseClient.from('tasks').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
-                tasks = data.map(d => ({
-                    id: d.id,
-                    text: d.text,
-                    category: d.category,
-                    completed: d.completed,
-                    createdAt: d.created_at
-                }));
+                tasks = data.map(d => {
+                    const parsed = parseFolderAndText(d.text);
+                    return {
+                        id: d.id,
+                        rawText: d.text,
+                        text: parsed.text,
+                        folder: parsed.folder,
+                        category: d.category,
+                        completed: d.completed,
+                        createdAt: d.created_at
+                    };
+                });
             } else {
-                console.error("Error loading tasks:", error);
                 tasks = [];
             }
             renderTasks();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
         }
 
-        // عرض المهام في الواجهة
         function renderTasks() {
-            // تفريغ القوائم الحالية
             const lists = {
                 'ui': document.getElementById('list-ui'),
                 'in': document.getElementById('list-in'),
@@ -760,31 +1413,34 @@
                 'nn': document.getElementById('list-nn')
             };
 
-            Object.values(lists).forEach(list => list.innerHTML = '');
+            Object.values(lists).forEach(list => { if(list) list.innerHTML = ''; });
 
-            // فرز المهام (الغير مكتملة أولاً، ثم المكتملة)
-            const sortedTasks = [...tasks].sort((a, b) => {
+            const filteredTasks = tasks.filter(t => {
+                if (selectedFolder === 'all') return true;
+                if (selectedFolder === '__general__') return !t.folder;
+                return t.folder === selectedFolder;
+            });
+
+            const sortedTasks = [...filteredTasks].sort((a, b) => {
                 if (a.completed === b.completed) {
-                    return new Date(b.createdAt) - new Date(a.createdAt); // الأحدث أولاً
+                    return new Date(b.createdAt) - new Date(a.createdAt);
                 }
                 return a.completed ? 1 : -1;
             });
 
-            // إنشاء عناصر القائمة
             sortedTasks.forEach(task => {
                 const list = lists[task.category];
                 if (!list) return;
 
                 const li = document.createElement('li');
-                li.className = `task-card bg-white border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-3 ${task.completed ? 'task-completed' : ''} cursor-move`;
+                li.className = `task-card bg-white border border-slate-100 rounded-xl p-3.5 flex items-start justify-between gap-3 ${task.completed ? 'task-completed' : ''} cursor-move`;
                 li.setAttribute('data-id', task.id);
                 
-                // تحديد لون خلفية المهمة بناء على الفئة (للمهام غير المكتملة)
                 if (!task.completed) {
-                     if(task.category === 'ui') li.classList.add('bg-red-50');
-                     if(task.category === 'in') li.classList.add('bg-blue-50');
-                     if(task.category === 'un') li.classList.add('bg-yellow-50');
-                     if(task.category === 'nn') li.classList.add('bg-slate-50');
+                     if(task.category === 'ui') li.classList.add('bg-red-50/70');
+                     if(task.category === 'in') li.classList.add('bg-blue-50/70');
+                     if(task.category === 'un') li.classList.add('bg-yellow-50/70');
+                     if(task.category === 'nn') li.classList.add('bg-slate-50/70');
                 }
 
                 li.innerHTML = `
@@ -794,9 +1450,18 @@
                                ${task.completed ? 'checked' : ''} 
                                onchange="toggleTaskStatus('${task.id}')"
                                id="check-${task.id}">
-                        <label for="check-${task.id}" class="task-text text-sm md:text-base font-medium break-words flex-grow cursor-pointer select-none">
-                            ${escapeHTML(task.text)}
-                        </label>
+                        <div class="flex flex-col flex-grow min-w-0">
+                            <label for="check-${task.id}" class="task-text text-sm md:text-base font-medium break-words cursor-pointer select-none">
+                                ${escapeHTML(task.text)}
+                            </label>
+                            ${task.folder ? `
+                            <div class="mt-1">
+                                <span onclick="selectFolder('${escapeHTML(task.folder)}')" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer transition-colors shadow-2xs" title="تصفية حسب هذا الملف">
+                                    <i class="fa-solid fa-folder text-[9px]"></i> ${escapeHTML(task.folder)}
+                                </span>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="flex gap-1 flex-shrink-0">
                         <button onclick="editTask('${task.id}')" 
@@ -815,10 +1480,9 @@
                 list.appendChild(li);
             });
 
-            // عرض رسالة إذا كانت القائمة فارغة
             Object.keys(lists).forEach(key => {
                 const list = lists[key];
-                if (list.children.length === 0) {
+                if (list && list.children.length === 0) {
                     const emptyMsg = document.createElement('li');
                     emptyMsg.className = 'text-center text-slate-400 text-sm py-4 border-2 border-dashed border-slate-100 rounded-xl';
                     emptyMsg.textContent = 'لا توجد مهام';
@@ -827,18 +1491,48 @@
             });
         }
 
-        // مسح جميع البيانات
         function clearAllData() {
             if (!currentUser) return;
-            showConfirmModal('هل أنت متأكد من مسح جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
-                tasks = [];
-                renderTasks();
-                showNotification('تم مسح جميع المهام');
-                await supabaseClient.from('tasks').delete().eq('user_id', currentUser.id);
+            const isFolderSpecific = (selectedFolder !== 'all' && selectedFolder !== '__general__');
+            const confirmMsg = isFolderSpecific
+                ? `هل أنت متأكد من مسح مهام ملف "${selectedFolder}" فقط؟ لا يمكن التراجع عن هذا الإجراء.`
+                : 'هل أنت متأكد من مسح جميع المهام المعروضة؟ لا يمكن التراجع عن هذا الإجراء.';
+            
+            showConfirmModal(confirmMsg, async () => {
+                if (isFolderSpecific) {
+                    const toDelete = tasks.filter(t => t.folder === selectedFolder);
+                    tasks = tasks.filter(t => t.folder !== selectedFolder);
+                    renderTasks();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification(`تم مسح مهام ملف "${selectedFolder}"`);
+                    for (const t of toDelete) {
+                        await supabaseClient.from('tasks').delete().eq('id', t.id);
+                    }
+                } else if (selectedFolder === '__general__') {
+                    const toDelete = tasks.filter(t => !t.folder);
+                    tasks = tasks.filter(t => t.folder);
+                    renderTasks();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification('تم مسح المهام العامة');
+                    for (const t of toDelete) {
+                        await supabaseClient.from('tasks').delete().eq('id', t.id);
+                    }
+                } else {
+                    tasks = [];
+                    renderTasks();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification('تم مسح جميع المهام');
+                    await supabaseClient.from('tasks').delete().eq('user_id', currentUser.id);
+                }
             });
         }
 
-        // دوال السحب والإفلات (Drag and Drop)
         function allowDrop(ev) {
             ev.preventDefault();
         }
@@ -859,9 +1553,7 @@
             }
         }
 
-        // --- Trust Logic ---
-        let trusts = [];
-
+        // --- Trusts Logic ---
         function setupTrustForm() {
             const form = document.getElementById('trustForm');
             form.addEventListener('submit', async function(e) {
@@ -869,23 +1561,37 @@
                 
                 const input = document.getElementById('trustInput');
                 const select = document.getElementById('trustCategorySelect');
+                const folderInput = document.getElementById('trustFolderInput');
                 
                 const text = input.value.trim();
                 const category = select.value;
+                const folder = folderInput ? folderInput.value.trim() : '';
                 
                 if (text) {
-                    await addTrust(text, category);
+                    await addTrust(text, category, folder);
                     input.value = '';
+                    if (selectedFolder === 'all' || selectedFolder === '__general__') {
+                        if (folderInput) folderInput.value = '';
+                    }
                     input.focus();
                 }
             });
         }
 
-        async function addTrust(text, category) {
+        async function addTrust(text, category, folder = '') {
             if (!currentUser) return;
+            const finalFolder = (folder || (selectedFolder !== 'all' && selectedFolder !== '__general__' ? selectedFolder : '')).replace(/[\[\]]/g, '').trim();
+            if (finalFolder && !customFolders.includes(finalFolder)) {
+                customFolders.push(finalFolder);
+                saveCustomFolders();
+            }
+            const formatted = formatWithFolder(text, finalFolder);
+            const parsed = parseFolderAndText(formatted);
             const newTrust = {
                 id: 'trust_' + Date.now().toString(),
-                text: text,
+                rawText: formatted,
+                text: parsed.text,
+                folder: parsed.folder,
                 category: category,
                 completed: false,
                 createdAt: new Date().toISOString()
@@ -893,11 +1599,15 @@
             
             trusts.push(newTrust);
             renderTrusts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             showNotification('تم إضافة الأمانة بنجاح');
             
             await supabaseClient.from('trusts').insert([{
                 id: newTrust.id,
-                text: newTrust.text,
+                text: newTrust.rawText,
                 category: newTrust.category,
                 completed: newTrust.completed,
                 created_at: newTrust.createdAt,
@@ -911,6 +1621,7 @@
                 trusts[index].completed = !trusts[index].completed;
                 if (trusts[index].completed) playSound('complete');
                 renderTrusts();
+                renderFolders();
                 await supabaseClient.from('trusts').update({ completed: trusts[index].completed }).eq('id', id);
             }
         }
@@ -918,6 +1629,10 @@
         async function deleteTrust(id) {
             trusts = trusts.filter(t => t.id !== id);
             renderTrusts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             await supabaseClient.from('trusts').delete().eq('id', id);
         }
 
@@ -925,18 +1640,26 @@
             if (!currentUser) return;
             const { data, error } = await supabaseClient.from('trusts').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
-                trusts = data.map(d => ({
-                    id: d.id,
-                    text: d.text,
-                    category: d.category,
-                    completed: d.completed,
-                    createdAt: d.created_at
-                }));
+                trusts = data.map(d => {
+                    const parsed = parseFolderAndText(d.text);
+                    return {
+                        id: d.id,
+                        rawText: d.text,
+                        text: parsed.text,
+                        folder: parsed.folder,
+                        category: d.category,
+                        completed: d.completed,
+                        createdAt: d.created_at
+                    };
+                });
             } else {
-                console.error("Error loading trusts:", error);
                 trusts = [];
             }
             renderTrusts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
         }
 
         function renderTrusts() {
@@ -948,7 +1671,13 @@
 
             Object.values(lists).forEach(list => { if (list) list.innerHTML = ''; });
 
-            const sorted = [...trusts].sort((a, b) => {
+            const filteredTrusts = trusts.filter(t => {
+                if (selectedFolder === 'all') return true;
+                if (selectedFolder === '__general__') return !t.folder;
+                return t.folder === selectedFolder;
+            });
+
+            const sorted = [...filteredTrusts].sort((a, b) => {
                 if (a.completed === b.completed) {
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 }
@@ -960,13 +1689,13 @@
                 if (!list) return;
 
                 const li = document.createElement('li');
-                li.className = `task-card bg-white border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-3 ${trust.completed ? 'task-completed' : ''} cursor-move`;
+                li.className = `task-card bg-white border border-slate-100 rounded-xl p-3.5 flex items-start justify-between gap-3 ${trust.completed ? 'task-completed' : ''} cursor-move`;
                 li.setAttribute('data-id', trust.id);
                 
                 if (!trust.completed) {
-                     if(trust.category === 'urgent') li.classList.add('bg-red-50');
-                     if(trust.category === 'medium') li.classList.add('bg-yellow-50');
-                     if(trust.category === 'deferred') li.classList.add('bg-slate-50');
+                     if(trust.category === 'urgent') li.classList.add('bg-red-50/70');
+                     if(trust.category === 'medium') li.classList.add('bg-yellow-50/70');
+                     if(trust.category === 'deferred') li.classList.add('bg-slate-50/70');
                 }
 
                 li.innerHTML = `
@@ -976,9 +1705,18 @@
                                ${trust.completed ? 'checked' : ''} 
                                onchange="toggleTrustStatus('${trust.id}')"
                                id="check-${trust.id}">
-                        <label for="check-${trust.id}" class="task-text text-sm md:text-base font-medium break-words flex-grow cursor-pointer select-none">
-                            ${escapeHTML(trust.text)}
-                        </label>
+                        <div class="flex flex-col flex-grow min-w-0">
+                            <label for="check-${trust.id}" class="task-text text-sm md:text-base font-medium break-words cursor-pointer select-none">
+                                ${escapeHTML(trust.text)}
+                            </label>
+                            ${trust.folder ? `
+                            <div class="mt-1">
+                                <span onclick="selectFolder('${escapeHTML(trust.folder)}')" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-md bg-amber-100 text-amber-800 hover:bg-amber-200 cursor-pointer transition-colors shadow-2xs" title="تصفية حسب هذا الملف">
+                                    <i class="fa-solid fa-folder text-[9px]"></i> ${escapeHTML(trust.folder)}
+                                </span>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="flex gap-1 flex-shrink-0">
                         <button onclick="editTrust('${trust.id}')" 
@@ -1010,11 +1748,43 @@
 
         function clearAllTrusts() {
             if (!currentUser) return;
-            showConfirmModal('هل أنت متأكد من مسح جميع الأمانات؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
-                trusts = [];
-                renderTrusts();
-                showNotification('تم مسح جميع الأمانات');
-                await supabaseClient.from('trusts').delete().eq('user_id', currentUser.id);
+            const isFolderSpecific = (selectedFolder !== 'all' && selectedFolder !== '__general__');
+            const confirmMsg = isFolderSpecific
+                ? `هل أنت متأكد من مسح أمانات ملف "${selectedFolder}" فقط؟`
+                : 'هل أنت متأكد من مسح جميع الأمانات المعروضة؟ لا يمكن التراجع عن هذا الإجراء.';
+
+            showConfirmModal(confirmMsg, async () => {
+                if (isFolderSpecific) {
+                    const toDelete = trusts.filter(t => t.folder === selectedFolder);
+                    trusts = trusts.filter(t => t.folder !== selectedFolder);
+                    renderTrusts();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification(`تم مسح أمانات ملف "${selectedFolder}"`);
+                    for (const tr of toDelete) {
+                        await supabaseClient.from('trusts').delete().eq('id', tr.id);
+                    }
+                } else if (selectedFolder === '__general__') {
+                    const toDelete = trusts.filter(t => !t.folder);
+                    trusts = trusts.filter(t => t.folder);
+                    renderTrusts();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification('تم مسح الأمانات العامة');
+                    for (const tr of toDelete) {
+                        await supabaseClient.from('trusts').delete().eq('id', tr.id);
+                    }
+                } else {
+                    trusts = [];
+                    renderTrusts();
+                    renderFolderChips();
+                    renderFolders();
+                    updateActiveFolderUI();
+                    showNotification('تم مسح جميع الأمانات');
+                    await supabaseClient.from('trusts').delete().eq('user_id', currentUser.id);
+                }
             });
         }
 
@@ -1034,163 +1804,7 @@
             }
         }
 
-        // دالة مساعدة لمنع XSS
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
-
-        // --- نظام التنبيهات ونوافذ التأكيد المخصصة ---
-
-        // إنشاء حاوية التنبيهات
-        const notificationContainer = document.createElement('div');
-        notificationContainer.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-max max-w-[90vw] pointer-events-none';
-        document.body.appendChild(notificationContainer);
-
-        function showNotification(message) {
-            const notif = document.createElement('div');
-            notif.className = 'bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2';
-            notif.innerHTML = `<i class="fa-solid fa-circle-check text-brand-400"></i> ${message}`;
-            
-            notificationContainer.appendChild(notif);
-            
-            // إظهار
-            requestAnimationFrame(() => {
-                notif.classList.remove('translate-y-full', 'opacity-0');
-            });
-            
-            // إخفاء بعد 3 ثواني
-            setTimeout(() => {
-                notif.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => notif.remove(), 300);
-            }, 3000);
-        }
-
-        // نافذة التأكيد المخصصة (بديل confirm)
-        function showConfirmModal(message, onConfirm) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
-            
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
-                    <div class="p-6 text-center">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800 mb-2">تأكيد الإجراء</h3>
-                        <p class="text-slate-600 text-sm mb-6">${message}</p>
-                        <div class="flex gap-3">
-                            <button id="cancelBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
-                            <button id="confirmBtn" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors shadow-sm shadow-red-200">نعم، امسح</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            const modalContent = modal.querySelector('.m-modal-content');
-            
-            // أنيميشن الدخول
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95', 'opacity-0');
-            });
-            
-            const closeModal = () => {
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => modal.remove(), 200);
-            };
-
-            modal.querySelector('#cancelBtn').onclick = closeModal;
-            modal.querySelector('#confirmBtn').onclick = () => {
-                onConfirm();
-                closeModal();
-            };
-        }
-        function showEditModal(currentText, onSave) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
-            
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
-                    <div class="p-6">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4">تعديل النص</h3>
-                        <input type="text" id="editInput" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 mb-6 bg-slate-50 focus:bg-white transition-all text-slate-700">
-                        <div class="flex gap-3">
-                            <button id="cancelBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
-                            <button id="saveBtn" class="flex-1 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-medium transition-colors shadow-sm">حفظ</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            const modalContent = modal.querySelector('.m-modal-content');
-            const input = modal.querySelector('#editInput');
-            input.value = currentText;
-            
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                input.focus();
-                input.select();
-            });
-            
-            const closeModal = () => {
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => modal.remove(), 200);
-            };
-
-            modal.querySelector('#cancelBtn').onclick = closeModal;
-            modal.querySelector('#saveBtn').onclick = () => {
-                const newVal = input.value.trim();
-                if (newVal) onSave(newVal);
-                closeModal();
-            };
-            
-            input.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter') modal.querySelector('#saveBtn').click();
-                if (e.key === 'Escape') closeModal();
-            });
-        }
-
-        async function editTask(id) {
-            const taskIndex = tasks.findIndex(t => t.id === id);
-            if (taskIndex !== -1) {
-                showEditModal(tasks[taskIndex].text, async (newText) => {
-                    tasks[taskIndex].text = newText;
-                    renderTasks();
-                    showNotification('تم التعديل بنجاح');
-                    await supabaseClient.from('tasks').update({ text: newText }).eq('id', id);
-                });
-            }
-        }
-
-        async function editTrust(id) {
-            const index = trusts.findIndex(t => t.id === id);
-            if (index !== -1) {
-                showEditModal(trusts[index].text, async (newText) => {
-                    trusts[index].text = newText;
-                    renderTrusts();
-                    showNotification('تم التعديل بنجاح');
-                    await supabaseClient.from('trusts').update({ text: newText }).eq('id', id);
-                });
-            }
-        }
         // --- Debts Logic ---
-        let debts = [];
-
         function setupDebtForm() {
             const form = document.getElementById('debtForm');
             if(!form) return;
@@ -1200,22 +1814,36 @@
                 const creditor = document.getElementById('debtCreditor').value.trim();
                 const amount = parseFloat(document.getElementById('debtAmount').value);
                 const dueDate = document.getElementById('debtDueDate').value;
+                const folderInput = document.getElementById('debtFolderInput');
+                const folder = folderInput ? folderInput.value.trim() : '';
                 
                 if (creditor && !isNaN(amount) && dueDate) {
-                    await addDebt(creditor, amount, dueDate);
+                    await addDebt(creditor, amount, dueDate, folder);
                     document.getElementById('debtCreditor').value = '';
                     document.getElementById('debtAmount').value = '';
                     document.getElementById('debtDueDate').value = '';
+                    if (selectedFolder === 'all' || selectedFolder === '__general__') {
+                        if (folderInput) folderInput.value = '';
+                    }
                     document.getElementById('debtCreditor').focus();
                 }
             });
         }
 
-        async function addDebt(creditor, amount, dueDate) {
+        async function addDebt(creditor, amount, dueDate, folder = '') {
             if (!currentUser) return;
+            const finalFolder = (folder || (selectedFolder !== 'all' && selectedFolder !== '__general__' ? selectedFolder : '')).replace(/[\[\]]/g, '').trim();
+            if (finalFolder && !customFolders.includes(finalFolder)) {
+                customFolders.push(finalFolder);
+                saveCustomFolders();
+            }
+            const formatted = formatWithFolder(creditor, finalFolder);
+            const parsed = parseFolderAndText(formatted);
             const newDebt = {
                 id: 'debt_' + Date.now().toString(),
-                creditor_name: creditor,
+                rawCreditor: formatted,
+                creditor_name: parsed.text,
+                folder: parsed.folder,
                 amount: amount,
                 due_date: dueDate,
                 completed: false,
@@ -1224,11 +1852,15 @@
             
             debts.push(newDebt);
             renderDebts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             showNotification('تم إضافة الدين بنجاح');
             
             await supabaseClient.from('debts').insert([{
                 id: newDebt.id,
-                creditor_name: newDebt.creditor_name,
+                creditor_name: newDebt.rawCreditor,
                 amount: newDebt.amount,
                 due_date: newDebt.due_date,
                 completed: newDebt.completed,
@@ -1243,7 +1875,7 @@
                 debts[index].completed = !debts[index].completed;
                 if (debts[index].completed) playSound('complete');
                 renderDebts();
-                
+                renderFolders();
                 await supabaseClient.from('debts').update({ completed: debts[index].completed }).eq('id', id);
             }
         }
@@ -1251,37 +1883,38 @@
         async function deleteDebt(id) {
             debts = debts.filter(d => d.id !== id);
             renderDebts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
             await supabaseClient.from('debts').delete().eq('id', id);
-        }
-
-        async function editDebt(id) {
-            const index = debts.findIndex(d => d.id === id);
-            if (index !== -1) {
-                showEditModal(debts[index].creditor_name, async (newText) => {
-                    debts[index].creditor_name = newText;
-                    renderDebts();
-                    showNotification('تم التعديل بنجاح');
-                    await supabaseClient.from('debts').update({ creditor_name: newText }).eq('id', id);
-                });
-            }
         }
 
         async function loadDebts() {
             if (!currentUser) return;
             const { data, error } = await supabaseClient.from('debts').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
-                debts = data.map(d => ({
-                    id: d.id,
-                    creditor_name: d.creditor_name,
-                    amount: parseFloat(d.amount),
-                    due_date: d.due_date,
-                    completed: d.completed,
-                    createdAt: d.created_at
-                }));
+                debts = data.map(d => {
+                    const parsed = parseFolderAndText(d.creditor_name);
+                    return {
+                        id: d.id,
+                        rawCreditor: d.creditor_name,
+                        creditor_name: parsed.text,
+                        folder: parsed.folder,
+                        amount: parseFloat(d.amount),
+                        due_date: d.due_date,
+                        completed: d.completed,
+                        createdAt: d.created_at
+                    };
+                });
             } else {
                 debts = [];
             }
             renderDebts();
+            renderFolderChips();
+            renderFolders();
+            updateFolderDatalist();
+            updateActiveFolderUI();
         }
 
         function renderDebts() {
@@ -1292,7 +1925,13 @@
             let totalRemaining = 0;
             let totalPaid = 0;
 
-            const sorted = [...debts].sort((a, b) => {
+            const filteredDebts = debts.filter(d => {
+                if (selectedFolder === 'all') return true;
+                if (selectedFolder === '__general__') return !d.folder;
+                return d.folder === selectedFolder;
+            });
+
+            const sorted = [...filteredDebts].sort((a, b) => {
                 if (a.completed === b.completed) {
                     return new Date(a.due_date) - new Date(b.due_date);
                 }
@@ -1316,10 +1955,17 @@
                                ${debt.completed ? 'checked' : ''} 
                                onchange="toggleDebtStatus('${debt.id}')"
                                id="check-${debt.id}">
-                        <div class="flex flex-col">
-                            <label for="check-${debt.id}" class="task-text text-sm md:text-base font-bold break-words cursor-pointer select-none ${debt.completed ? 'text-slate-500' : 'text-slate-800'}">
-                                الدائن: ${escapeHTML(debt.creditor_name)}
-                            </label>
+                        <div class="flex flex-col flex-grow min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <label for="check-${debt.id}" class="task-text text-sm md:text-base font-bold break-words cursor-pointer select-none ${debt.completed ? 'text-slate-500' : 'text-slate-800'}">
+                                    الدائن: ${escapeHTML(debt.creditor_name)}
+                                </label>
+                                ${debt.folder ? `
+                                <span onclick="selectFolder('${escapeHTML(debt.folder)}')" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer transition-colors shadow-2xs" title="تصفية حسب هذا الملف">
+                                    <i class="fa-solid fa-folder text-[9px]"></i> ${escapeHTML(debt.folder)}
+                                </span>
+                                ` : ''}
+                            </div>
                             <div class="flex items-center gap-4 mt-1 text-sm">
                                 <span class="font-bold ${debt.completed ? 'text-slate-400' : 'text-brand-600'}">
                                     <i class="fa-solid fa-coins mr-1"></i> ${debt.amount.toLocaleString()}
@@ -1333,7 +1979,7 @@
                     <div class="flex gap-1 flex-shrink-0 self-end md:self-center">
                         <button onclick="editDebt('${debt.id}')" 
                                 class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
-                                title="تعديل الدائن">
+                                title="تعديل بيانات الدين">
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <button onclick="deleteDebt('${debt.id}')" 
@@ -1346,7 +1992,7 @@
                 list.appendChild(li);
             });
 
-            if (debts.length === 0) {
+            if (filteredDebts.length === 0) {
                 list.innerHTML = '<li class="text-center text-slate-400 text-sm py-8 border-2 border-dashed border-slate-100 rounded-xl">لا توجد ديون مسجلة حالياً</li>';
             }
 
@@ -1354,6 +2000,255 @@
             const totalPaidEl = document.getElementById('totalPaidDebts');
             if(totalRemainingEl) totalRemainingEl.textContent = totalRemaining.toLocaleString();
             if(totalPaidEl) totalPaidEl.textContent = totalPaid.toLocaleString();
+        }
+
+        // --- Edit Modals ---
+        async function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            showEditItemModal({
+                title: 'تعديل المهمة',
+                text: task.text,
+                folder: task.folder,
+                onSave: async ({ text, folder }) => {
+                    task.text = text;
+                    task.folder = folder;
+                    task.rawText = formatWithFolder(text, folder);
+                    renderTasks();
+                    renderFolderChips();
+                    renderFolders();
+                    updateFolderDatalist();
+                    updateActiveFolderUI();
+                    showNotification('تم تعديل المهمة بنجاح');
+                    await supabaseClient.from('tasks').update({ text: task.rawText }).eq('id', id);
+                }
+            });
+        }
+
+        async function editTrust(id) {
+            const trust = trusts.find(t => t.id === id);
+            if (!trust) return;
+            showEditItemModal({
+                title: 'تعديل الأمانة',
+                text: trust.text,
+                folder: trust.folder,
+                onSave: async ({ text, folder }) => {
+                    trust.text = text;
+                    trust.folder = folder;
+                    trust.rawText = formatWithFolder(text, folder);
+                    renderTrusts();
+                    renderFolderChips();
+                    renderFolders();
+                    updateFolderDatalist();
+                    updateActiveFolderUI();
+                    showNotification('تم تعديل الأمانة بنجاح');
+                    await supabaseClient.from('trusts').update({ text: trust.rawText }).eq('id', id);
+                }
+            });
+        }
+
+        async function editDebt(id) {
+            const debt = debts.find(d => d.id === id);
+            if (!debt) return;
+            showEditItemModal({
+                title: 'تعديل بيانات الدين',
+                text: debt.creditor_name,
+                folder: debt.folder,
+                isDebt: true,
+                amount: debt.amount,
+                dueDate: debt.due_date,
+                onSave: async ({ text, folder, amount, dueDate }) => {
+                    debt.creditor_name = text;
+                    debt.folder = folder;
+                    debt.rawCreditor = formatWithFolder(text, folder);
+                    debt.amount = amount;
+                    debt.due_date = dueDate;
+                    renderDebts();
+                    renderFolderChips();
+                    renderFolders();
+                    updateFolderDatalist();
+                    updateActiveFolderUI();
+                    showNotification('تم تعديل بيانات الدين بنجاح');
+                    await supabaseClient.from('debts').update({
+                        creditor_name: debt.rawCreditor,
+                        amount: debt.amount,
+                        due_date: debt.due_date
+                    }).eq('id', id);
+                }
+            });
+        }
+
+        function showEditItemModal({ title = 'تعديل', text = '', folder = '', isDebt = false, amount = 0, dueDate = '', onSave }) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-brand-500"></i> ${title}
+                        </h3>
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">${isDebt ? 'اسم الدائن أو الغرض' : 'النص / الوصف'}</label>
+                                <input type="text" id="editModalText" value="${escapeHTML(text)}" 
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">الملف / المشروع (اختياري)</label>
+                                <input type="text" id="editModalFolder" list="folderDatalist" value="${escapeHTML(folder)}" placeholder="مثلاً: منصة جيبها"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                            </div>
+                            ${isDebt ? `
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1">المبلغ</label>
+                                    <input type="number" id="editModalAmount" value="${amount}" min="0" step="0.01" dir="ltr"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1">تاريخ الاستحقاق</label>
+                                    <input type="date" id="editModalDueDate" value="${dueDate}"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-slate-700">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="cancelEditBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
+                            <button id="saveEditBtn" class="flex-1 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold transition-colors shadow-sm">حفظ التعديلات</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            const textInput = modal.querySelector('#editModalText');
+            const folderInput = modal.querySelector('#editModalFolder');
+            
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                textInput.focus();
+            });
+            
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#cancelEditBtn').onclick = closeModal;
+            modal.querySelector('#saveEditBtn').onclick = () => {
+                const newText = textInput.value.trim();
+                const newFolder = folderInput.value.replace(/[\[\]]/g, '').trim();
+                if (!newText) return;
+                
+                let newAmount = amount;
+                let newDueDate = dueDate;
+                if (isDebt) {
+                    newAmount = parseFloat(modal.querySelector('#editModalAmount').value) || 0;
+                    newDueDate = modal.querySelector('#editModalDueDate').value;
+                }
+                
+                if (newFolder && !customFolders.includes(newFolder)) {
+                    customFolders.push(newFolder);
+                    saveCustomFolders();
+                }
+                
+                onSave({ text: newText, folder: newFolder, amount: newAmount, dueDate: newDueDate });
+                closeModal();
+            };
+            
+            textInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') modal.querySelector('#saveEditBtn').click();
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+
+        function showEditModal(currentText, onSave) {
+            showEditItemModal({
+                title: 'تعديل النص',
+                text: currentText,
+                onSave: ({ text }) => onSave(text)
+            });
+        }
+
+        // --- Helpers & Notifications ---
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        const notificationContainer = document.createElement('div');
+        notificationContainer.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-max max-w-[90vw] pointer-events-none';
+        document.body.appendChild(notificationContainer);
+
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2 font-medium';
+            notif.innerHTML = `<i class="fa-solid fa-circle-check text-brand-400"></i> ${message}`;
+            
+            notificationContainer.appendChild(notif);
+            
+            requestAnimationFrame(() => {
+                notif.classList.remove('translate-y-full', 'opacity-0');
+            });
+            
+            setTimeout(() => {
+                notif.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => notif.remove(), 300);
+            }, 3000);
+        }
+
+        function showConfirmModal(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content">
+                    <div class="p-6 text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">تأكيد الإجراء</h3>
+                        <p class="text-slate-600 text-sm mb-6">${message}</p>
+                        <div class="flex gap-3">
+                            <button id="cancelBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">إلغاء</button>
+                            <button id="confirmBtn" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors shadow-sm shadow-red-200">نعم، تأكيد</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const modalContent = modal.querySelector('.m-modal-content');
+            
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            });
+            
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#cancelBtn').onclick = closeModal;
+            modal.querySelector('#confirmBtn').onclick = () => {
+                onConfirm();
+                closeModal();
+            };
         }
     </script>
 </body>
