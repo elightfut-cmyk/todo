@@ -400,27 +400,27 @@
         </div>
 
         <!-- Sticky Mobile-Friendly Tabs Navigation -->
-        <div class="sticky top-2 z-40 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-slate-200/80 mb-6">
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 md:gap-2">
-                <button onclick="switchTab('tasks')" id="tab-tasks" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all bg-brand-500 text-white shadow-sm">
-                    <i class="fa-solid fa-list-check text-sm md:text-base"></i>
+        <!-- Sticky Mobile-Friendly Tabs Navigation (صف واحد خفيف وأنيق لجميع الشاشات) -->
+        <div class="sticky top-2 z-40 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-2xl shadow-sm border border-slate-200/80 mb-4 md:mb-6">
+            <div class="grid grid-cols-5 gap-1 md:gap-1.5">
+                <button onclick="switchTab('tasks')" id="tab-tasks" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all bg-brand-500 text-white shadow-sm">
+                    <i class="fa-solid fa-list-check text-xs sm:text-sm md:text-base"></i>
                     <span class="truncate">المهام</span>
                 </button>
-                <button onclick="switchTab('timeline')" id="tab-timeline" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100 relative group">
-                    <i class="fa-solid fa-arrow-trend-up text-sm md:text-base text-emerald-500 group-hover:scale-110 transition-transform"></i>
+                <button onclick="switchTab('timeline')" id="tab-timeline" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-arrow-trend-up text-xs sm:text-sm md:text-base text-emerald-500"></i>
                     <span class="truncate">سهم اليوم</span>
-                    <span class="inline-block text-[9px] bg-emerald-100 text-emerald-700 px-1 py-0.2 rounded-md font-extrabold mr-1 shadow-2xs">فاخر</span>
                 </button>
-                <button onclick="switchTab('trusts')" id="tab-trusts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
-                    <i class="fa-solid fa-hand-holding-heart text-sm md:text-base"></i>
+                <button onclick="switchTab('trusts')" id="tab-trusts" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-hand-holding-heart text-xs sm:text-sm md:text-base"></i>
                     <span class="truncate">الأمانات</span>
                 </button>
-                <button onclick="switchTab('debts')" id="tab-debts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
-                    <i class="fa-solid fa-money-bill-wave text-sm md:text-base"></i>
+                <button onclick="switchTab('debts')" id="tab-debts" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-money-bill-wave text-xs sm:text-sm md:text-base"></i>
                     <span class="truncate">الديون</span>
                 </button>
-                <button onclick="switchTab('files')" id="tab-files" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
-                    <i class="fa-solid fa-folder-tree text-sm md:text-base"></i>
+                <button onclick="switchTab('files')" id="tab-files" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-folder-tree text-xs sm:text-sm md:text-base"></i>
                     <span class="truncate">الملفات</span>
                 </button>
             </div>
