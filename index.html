@@ -368,13 +368,6 @@
             </div>
         </header>
 
-        <!-- Quick Files Bar -->
-        <div class="mb-4 bg-white p-3 md:p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2 overflow-x-auto w-full pb-1 md:pb-0 custom-scrollbar" id="folderChipsContainer">
-                <!-- Dynamically populated chips -->
-            </div>
-        </div>
-
         <!-- Active Folder Banner -->
         <div id="activeFolderBanner" class="hidden mb-4 bg-gradient-to-l from-emerald-600 to-teal-600 text-white p-3.5 md:p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
             <div class="flex items-center gap-3">
@@ -399,7 +392,6 @@
             </div>
         </div>
 
-        <!-- Sticky Mobile-Friendly Tabs Navigation -->
         <!-- Sticky Mobile-Friendly Tabs Navigation (صف واحد خفيف وأنيق لجميع الشاشات) -->
         <div class="sticky top-2 z-40 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-2xl shadow-sm border border-slate-200/80 mb-4 md:mb-6">
             <div class="grid grid-cols-5 gap-1 md:gap-1.5">
@@ -421,7 +413,7 @@
                 </button>
                 <button onclick="switchTab('files')" id="tab-files" class="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-1.5 sm:py-2.5 px-0.5 sm:px-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
                     <i class="fa-solid fa-folder-tree text-xs sm:text-sm md:text-base"></i>
-                    <span class="truncate">الملفات</span>
+                    <span class="truncate">ملفاتي</span>
                 </button>
             </div>
         </div>
@@ -673,16 +665,23 @@
 
         <!-- Files / Projects View -->
         <div id="files-view" class="hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                 <div>
                     <h2 class="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-tree text-brand-500"></i> الملفات والمشاريع
+                        <i class="fa-solid fa-folder-tree text-brand-500"></i> ملفاتي والمشاريع
                     </h2>
                     <p class="text-slate-500 text-sm mt-1">نظم مهامك وأماناتك وديونك تحت ملفات مستقلة (مثل: منصة جيبها)</p>
                 </div>
                 <button onclick="showCreateFolderModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-5 rounded-xl transition-all shadow-sm flex items-center gap-2 self-start sm:self-auto">
                     <i class="fa-solid fa-folder-plus"></i> إنشاء ملف جديد
                 </button>
+            </div>
+
+            <!-- Quick Files Bar (شريط الملفات يظهر فقط هنا بعد الضغط على ملفاتي) -->
+            <div class="mb-6 bg-white p-3 md:p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 overflow-x-auto w-full pb-1 md:pb-0 custom-scrollbar" id="folderChipsContainer">
+                    <!-- Dynamically populated chips -->
+                </div>
             </div>
 
             <!-- Files Grid -->
@@ -926,6 +925,7 @@
                     tabFiles.classList.remove('text-slate-600', 'hover:bg-slate-100');
                 }
                 renderFolders();
+                renderFolderChips();
             }
         }
 
@@ -1178,7 +1178,7 @@
                             </div>
                             <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-red-500"></i> الديون المتبقية</span>
-                                <span class="font-bold">${debtRemaining.toLocaleString()}</span>
+                                <span class="font-bold">${debtRemaining.toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
@@ -2441,7 +2441,7 @@
                             </div>
                             <div class="flex items-center gap-4 mt-1 text-sm">
                                 <span class="font-bold ${debt.completed ? 'text-slate-400' : 'text-brand-600'}">
-                                    <i class="fa-solid fa-coins mr-1"></i> ${debt.amount.toLocaleString()}
+                                    <i class="fa-solid fa-coins mr-1"></i> ${debt.amount.toLocaleString('en-US')}
                                 </span>
                                 <span class="${dateColor}">
                                     <i class="fa-regular fa-calendar mr-1"></i> ${debt.due_date}
@@ -2471,8 +2471,8 @@
 
             const totalRemainingEl = document.getElementById('totalRemainingDebts');
             const totalPaidEl = document.getElementById('totalPaidDebts');
-            if(totalRemainingEl) totalRemainingEl.textContent = totalRemaining.toLocaleString();
-            if(totalPaidEl) totalPaidEl.textContent = totalPaid.toLocaleString();
+            if(totalRemainingEl) totalRemainingEl.textContent = totalRemaining.toLocaleString('en-US');
+            if(totalPaidEl) totalPaidEl.textContent = totalPaid.toLocaleString('en-US');
         }
 
         // --- Edit Modals ---
@@ -2907,6 +2907,36 @@
             }
         }
 
+        // Helper to convert any Eastern Arabic numerals (٠١٢٣٤٥٦٧٨٩) to standard Western Arabic numerals (0123456789)
+        function toWesternDigits(str) {
+            if (str == null) return '';
+            const eastern = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            return String(str).replace(/[٠-٩]/g, d => eastern.indexOf(d));
+        }
+
+        function formatArabicTime(date = new Date()) {
+            try {
+                const str = date.toLocaleTimeString('ar-EG-u-nu-latn', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                return toWesternDigits(str);
+            } catch(e) {
+                let h = date.getHours();
+                const m = String(date.getMinutes()).padStart(2, '0');
+                const s = String(date.getSeconds()).padStart(2, '0');
+                const ampm = h >= 12 ? 'م' : 'ص';
+                h = h % 12 || 12;
+                return `${String(h).padStart(2, '0')}:${m}:${s} ${ampm}`;
+            }
+        }
+
+        function formatArabicDate(date = new Date()) {
+            try {
+                const str = date.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                return toWesternDigits(str);
+            } catch(e) {
+                return toWesternDigits(date.toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+            }
+        }
+
         function startTimelineClock() {
             const timeEl = document.getElementById('timelineTimeDisplay');
             const dateEl = document.getElementById('timelineCurrentDate');
@@ -2914,10 +2944,10 @@
             function updateTime() {
                 const now = new Date();
                 if (timeEl) {
-                    timeEl.textContent = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    timeEl.textContent = formatArabicTime(now);
                 }
                 if (dateEl) {
-                    dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    dateEl.textContent = formatArabicDate(now);
                 }
             }
 
