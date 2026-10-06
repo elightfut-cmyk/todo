@@ -113,6 +113,190 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* --- سهم مسار اليوم الأنيق (Day Arrow Timeline Styles) --- */
+        .timeline-scroll-container {
+            position: relative;
+            scrollbar-width: thin;
+        }
+
+        .timeline-horizontal-track {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            padding: 1.5rem 0.5rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            direction: rtl;
+        }
+
+        .timeline-segment-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            width: 290px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (min-width: 768px) {
+            .timeline-segment-wrapper {
+                width: 320px;
+            }
+        }
+
+        .timeline-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            border-width: 2px;
+            border-style: solid;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+        }
+
+        .timeline-card.is-completed {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%) !important;
+            border-color: #86efac !important;
+        }
+
+        .timeline-card.is-completed .timeline-title {
+            text-decoration: line-through;
+            color: #15803d;
+            opacity: 0.85;
+        }
+
+        /* The Arrow Connector between pieces */
+        .timeline-connector {
+            position: relative;
+            flex-shrink: 0;
+            width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            user-select: none;
+            padding: 0 4px;
+        }
+
+        .timeline-connector-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(270deg, #cbd5e1, #94a3b8);
+            transform: translateY(-50%);
+            z-index: 1;
+            border-radius: 9999px;
+            transition: background 0.3s ease;
+        }
+
+        .timeline-connector:hover .timeline-connector-line {
+            background: linear-gradient(270deg, #10b981, #6366f1);
+        }
+
+        .connector-indicator {
+            position: relative;
+            z-index: 2;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .connector-btn-add {
+            position: absolute;
+            z-index: 3;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.9);
+            opacity: 0;
+            transform: scale(0.3) rotate(-90deg);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            pointer-events: none;
+        }
+
+        .timeline-connector:hover .connector-indicator {
+            opacity: 0;
+            transform: scale(0.4);
+        }
+
+        .timeline-connector:hover .connector-btn-add,
+        .timeline-connector:focus-within .connector-btn-add {
+            opacity: 1;
+            transform: scale(1.15) rotate(0deg);
+            pointer-events: auto;
+        }
+
+        .connector-btn-add:hover {
+            transform: scale(1.25) rotate(90deg) !important;
+            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.7), 0 0 0 4px rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Vertical view mode */
+        .timeline-vertical-track {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 1rem 0;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .timeline-vertical-track .timeline-segment-wrapper {
+            width: 100%;
+        }
+
+        .timeline-vertical-track .timeline-connector {
+            width: 100%;
+            height: 52px;
+            padding: 4px 0;
+        }
+
+        .timeline-vertical-track .timeline-connector-line {
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            right: auto;
+            width: 3px;
+            height: 100%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+        }
+
+        .timeline-vertical-track .timeline-connector:hover .timeline-connector-line {
+            background: linear-gradient(180deg, #10b981, #6366f1);
+        }
+
+        @keyframes pulseChevron {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.12); }
+        }
+
+        .chevron-pulse {
+            animation: pulseChevron 2.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen p-3 md:p-8 selection:bg-brand-500 selection:text-white">
@@ -152,6 +336,12 @@
             <button type="button" id="toggleAuthModeBtn" onclick="toggleAuthMode()" class="text-sm text-slate-500 hover:text-brand-600 font-medium mt-2 transition-colors">
                 ليس لديك حساب؟ <span class="font-bold underline">إنشاء حساب جديد</span>
             </button>
+            <div class="pt-2 border-t border-slate-100 mt-2 text-center">
+                <button type="button" onclick="continueAsGuest()" class="text-xs text-slate-400 hover:text-emerald-600 font-semibold transition-colors flex items-center justify-center gap-1.5 mx-auto">
+                    <i class="fa-solid fa-arrow-right-to-bracket text-emerald-500"></i>
+                    <span>المتابعة كضيف بدون تسجيل دخول (تجربة سريعة)</span>
+                </button>
+            </div>
         </form>
     </div>
 
@@ -211,20 +401,25 @@
 
         <!-- Sticky Mobile-Friendly Tabs Navigation -->
         <div class="sticky top-2 z-40 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-slate-200/80 mb-6">
-            <div class="grid grid-cols-4 gap-1">
-                <button onclick="switchTab('tasks')" id="tab-tasks" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all bg-brand-500 text-white shadow-sm">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 md:gap-2">
+                <button onclick="switchTab('tasks')" id="tab-tasks" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all bg-brand-500 text-white shadow-sm">
                     <i class="fa-solid fa-list-check text-sm md:text-base"></i>
                     <span class="truncate">المهام</span>
                 </button>
-                <button onclick="switchTab('trusts')" id="tab-trusts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                <button onclick="switchTab('timeline')" id="tab-timeline" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100 relative group">
+                    <i class="fa-solid fa-arrow-trend-up text-sm md:text-base text-emerald-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="truncate">سهم اليوم</span>
+                    <span class="inline-block text-[9px] bg-emerald-100 text-emerald-700 px-1 py-0.2 rounded-md font-extrabold mr-1 shadow-2xs">فاخر</span>
+                </button>
+                <button onclick="switchTab('trusts')" id="tab-trusts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
                     <i class="fa-solid fa-hand-holding-heart text-sm md:text-base"></i>
                     <span class="truncate">الأمانات</span>
                 </button>
-                <button onclick="switchTab('debts')" id="tab-debts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                <button onclick="switchTab('debts')" id="tab-debts" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
                     <i class="fa-solid fa-money-bill-wave text-sm md:text-base"></i>
                     <span class="truncate">الديون</span>
                 </button>
-                <button onclick="switchTab('files')" id="tab-files" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
+                <button onclick="switchTab('files')" id="tab-files" class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-2.5 px-1 md:px-3 rounded-xl text-xs md:text-sm font-bold transition-all text-slate-600 hover:bg-slate-100">
                     <i class="fa-solid fa-folder-tree text-sm md:text-base"></i>
                     <span class="truncate">الملفات</span>
                 </button>
@@ -496,6 +691,171 @@
             </div>
         </div>
 
+        <!-- Timeline / Day Flow View (سهم مسار اليوم الفاخر) -->
+        <div id="timeline-view" class="hidden animate-fade-in">
+            <!-- Header Hero Deck -->
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-5 md:p-7 mb-6 shadow-xl relative overflow-hidden border border-indigo-900/60">
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-2.5 mb-2.5 flex-wrap">
+                            <span class="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-black rounded-full shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrow-trend-up"></i> سهم مسار اليوم الفاخر
+                            </span>
+                            <span id="timelineCurrentTime" class="text-xs bg-white/10 text-indigo-200 px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1.5 border border-white/10 font-mono">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                <i class="fa-regular fa-clock"></i> <span id="timelineTimeDisplay">--:--</span>
+                            </span>
+                            <span id="timelineCurrentDate" class="text-xs text-slate-300 font-medium"></span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+                            <span>مسار مهام اليوم المتتابع</span>
+                            <span class="text-xs font-normal text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-1 rounded-lg">من الفجر حتى الليل</span>
+                        </h2>
+                        <p class="text-indigo-200/80 text-xs md:text-sm mt-1 max-w-xl leading-relaxed">
+                            نظّم جدول يومك خطوة بخطوة في سهم زمني مترابط. حرّك الفأرة بين أي قطعتين للضغط على (+) وإضافة محطة بينية جديدة!
+                        </p>
+                    </div>
+
+                    <!-- Progress & Controls -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 min-w-[210px]">
+                            <div class="flex justify-between items-center text-xs mb-1.5">
+                                <span class="text-indigo-200 font-medium">إنجاز المسار اليومي</span>
+                                <span id="timelineProgressPercent" class="font-extrabold text-emerald-400">0%</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                                <div id="timelineProgressBar" class="h-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-slate-300 mt-1.5">
+                                <span id="timelineStatsText">0 من 0 محطات</span>
+                                <span class="text-emerald-300 font-semibold" id="timelineEncouragement">يوم مليء بالإنجاز!</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="toggleTimelineViewMode()" id="timelineViewToggleBtn" class="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/10 shadow-xs">
+                                <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                                <span id="timelineViewModeLabel">عرض رأسي</span>
+                            </button>
+                            <button onclick="applyStarterTimelineTemplate()" class="px-3.5 py-2.5 bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-emerald-400/30 shadow-xs">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                                <span>روتين مقترح</span>
+                            </button>
+                            <button onclick="clearTimelinePrompt()" class="px-3 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-rose-400/20" title="تفريغ السهم">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add Bar -->
+            <div class="bg-white rounded-2xl shadow-sm p-4 md:p-5 mb-6 border border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-emerald-500"></i>
+                        <span>إضافة محطة جديدة إلى السهم</span>
+                    </h3>
+                    <div class="text-xs text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                        <span>أو مرر الفأرة بين أي محطتين للضغط على (+)</span>
+                    </div>
+                </div>
+
+                <form id="timelineQuickAddForm" class="flex flex-col md:flex-row gap-3">
+                    <div class="w-full md:w-60 flex-shrink-0">
+                        <input type="text" id="timelineQuickTime" placeholder="الوقت (مثال: من الفجر إلى الساعة 8)" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all font-medium">
+                    </div>
+                    <div class="flex-grow">
+                        <input type="text" id="timelineQuickTitle" placeholder="المهمة / النشاط (مثال: مراجعة قرآن)" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all">
+                    </div>
+                    <div class="w-full md:w-48 flex-shrink-0">
+                        <select id="timelineQuickCategory" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm cursor-pointer transition-all">
+                            <option value="spirituality">🕌 روحانيات وعبادة</option>
+                            <option value="work">💼 عمل وتركيز</option>
+                            <option value="learning">📚 دراسة وتعلّم</option>
+                            <option value="health">🏃 رياضة وصحة</option>
+                            <option value="leisure">☕ راحة وعائلة</option>
+                            <option value="general">⭐ عام وشخصي</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm flex-shrink-0">
+                        <i class="fa-solid fa-plus"></i> إضافة إلى السهم
+                    </button>
+                </form>
+
+                <!-- Quick Presets -->
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 overflow-x-auto pb-1 text-xs text-slate-500 custom-scrollbar">
+                    <span class="text-slate-400 font-semibold flex-shrink-0"><i class="fa-solid fa-clock-rotate-left mr-1"></i> أوقات نموذجية:</span>
+                    <button type="button" onclick="setQuickTimePreset('من الفجر إلى الساعة 8:00', 'مراجعة قرآن')" class="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors flex-shrink-0 font-medium">الفجر ➔ 8:00 (مراجعة قرآن)</button>
+                    <button type="button" onclick="setQuickTimePreset('8:00 ص - 12:00 م', 'جلسة عمل عميق وتركيز')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors flex-shrink-0 font-medium">8:00 ➔ 12:00 (عمل عميق)</button>
+                    <button type="button" onclick="setQuickTimePreset('12:00 م - 2:00 م', 'صلاة وغداء واستراحة')" class="px-2.5 py-1 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors flex-shrink-0 font-medium">12:00 ➔ 2:00 (صلاة وغداء)</button>
+                    <button type="button" onclick="setQuickTimePreset('2:00 م - 5:00 م', 'إنجاز ومتابعة المهام')" class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors flex-shrink-0 font-medium">2:00 ➔ 5:00 (متابعة)</button>
+                    <button type="button" onclick="setQuickTimePreset('5:00 م - 7:30 م', 'رياضة ومشي وقراءة')" class="px-2.5 py-1 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-colors flex-shrink-0 font-medium">5:00 ➔ 7:30 (رياضة وقراءة)</button>
+                    <button type="button" onclick="setQuickTimePreset('بعد العشاء - 11:00 م', 'جلسة عائلية واستعداد للنوم')" class="px-2.5 py-1 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 rounded-lg transition-colors flex-shrink-0 font-medium">العشاء ➔ النوم</button>
+                </div>
+            </div>
+
+            <!-- Pipeline Orientation & Info Guide -->
+            <div class="flex items-center justify-between mb-3 px-2">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs"></span>
+                    <span>بداية اليوم (الفجر)</span>
+                    <i class="fa-solid fa-arrow-left-long text-emerald-500"></i>
+                    <span class="text-slate-400 font-normal">تسلسل محطات مسار اليوم التفاعلي</span>
+                    <i class="fa-solid fa-arrow-left-long text-indigo-500"></i>
+                    <span>نهاية اليوم (الليل)</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-xs"></span>
+                </div>
+                <div class="text-xs text-slate-400 hidden sm:flex items-center gap-2 font-medium">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer text-emerald-500"></i> مرر بين القطع للضغط على (+)</span>
+                    <span>·</span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-up-down-left-right text-slate-400"></i> اسحب لإعادة الترتيب</span>
+                </div>
+            </div>
+
+            <!-- Main Interactive Arrow Track -->
+            <div class="bg-slate-100/70 p-3 md:p-6 rounded-3xl border border-slate-200/80 shadow-inner relative min-h-[240px]">
+                <!-- Horizontal Track Container -->
+                <div id="timelineHorizontalContainer" class="timeline-scroll-container">
+                    <div id="timelineTrackHorizontal" class="timeline-horizontal-track custom-scrollbar">
+                        <!-- Segments & Connectors inserted dynamically -->
+                    </div>
+                </div>
+
+                <!-- Vertical Track Container -->
+                <div id="timelineVerticalContainer" class="hidden">
+                    <div id="timelineTrackVertical" class="timeline-vertical-track">
+                        <!-- Segments & Connectors inserted dynamically in vertical mode -->
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="timelineEmptyState" class="hidden text-center py-12 px-4">
+                    <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner animate-bounce">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 mb-2">سهم مسار اليوم فارغ حالياً</h3>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">
+                        ابدأ ببناء مسار يومك خطوة بخطوة! يمكنك إضافة محطتك الأولى أو تفعيل الروتين اليومي المقترح بضغطة زر واحدة.
+                    </p>
+                    <div class="flex items-center justify-center gap-3 flex-wrap">
+                        <button onclick="openTimelineAddModal(0)" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> إضافة أول محطة بالسهم
+                        </button>
+                        <button onclick="applyStarterTimelineTemplate()" class="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> تفعيل الروتين المقترح
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -508,6 +868,8 @@
         let tasks = [];
         let trusts = [];
         let debts = [];
+        let timelineItems = [];
+        let timelineViewMode = 'horizontal'; // 'horizontal' | 'vertical'
         let customFolders = [];
         let selectedFolder = 'all'; // 'all' | '__general__' | 'folderName'
 
@@ -516,14 +878,16 @@
             const trustsView = document.getElementById('trusts-view');
             const debtsView = document.getElementById('debts-view');
             const filesView = document.getElementById('files-view');
+            const timelineView = document.getElementById('timeline-view');
             
             const tabTasks = document.getElementById('tab-tasks');
             const tabTrusts = document.getElementById('tab-trusts');
             const tabDebts = document.getElementById('tab-debts');
             const tabFiles = document.getElementById('tab-files');
+            const tabTimeline = document.getElementById('tab-timeline');
             
-            [tasksView, trustsView, debtsView, filesView].forEach(v => v && v.classList.add('hidden'));
-            [tabTasks, tabTrusts, tabDebts, tabFiles].forEach(t => {
+            [tasksView, trustsView, debtsView, filesView, timelineView].forEach(v => v && v.classList.add('hidden'));
+            [tabTasks, tabTrusts, tabDebts, tabFiles, tabTimeline].forEach(t => {
                 if(t) {
                     t.classList.remove('bg-brand-500', 'text-white', 'shadow-sm');
                     t.classList.add('text-slate-600', 'hover:bg-slate-100');
@@ -536,6 +900,13 @@
                     tabTasks.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
                     tabTasks.classList.remove('text-slate-600', 'hover:bg-slate-100');
                 }
+            } else if (tab === 'timeline') {
+                if(timelineView) timelineView.classList.remove('hidden');
+                if(tabTimeline) {
+                    tabTimeline.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    tabTimeline.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
+                renderTimeline();
             } else if (tab === 'trusts') {
                 if(trustsView) trustsView.classList.remove('hidden');
                 if(tabTrusts) {
@@ -1098,6 +1469,7 @@
             setupForm();
             setupTrustForm();
             setupDebtForm();
+            setupTimeline();
             setupAuth();
 
             const taskOptions = {
@@ -1222,16 +1594,19 @@
                 loadTasks();
                 loadTrusts();
                 loadDebts();
+                loadTimeline();
             } else {
                 currentUser = null;
                 tasks = [];
                 trusts = [];
                 debts = [];
+                timelineItems = [];
                 customFolders = [];
                 selectedFolder = 'all';
                 renderTasks();
                 renderTrusts();
                 renderDebts();
+                renderTimeline();
                 renderFolderChips();
                 renderFolders();
                 authContainer.classList.remove('hidden');
@@ -1285,6 +1660,20 @@
 
         async function logout() {
             await supabaseClient.auth.signOut();
+            handleAuthChange(null);
+        }
+
+        function continueAsGuest() {
+            currentUser = { id: 'guest_user', email: 'guest@todo.local', user_metadata: { display_name: 'ضيف (تجربة سريعة)' } };
+            document.getElementById('userEmailDisplay').textContent = 'ضيف (تجربة سريعة)';
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            loadCustomFolders();
+            loadTasks();
+            loadTrusts();
+            loadDebts();
+            loadTimeline();
+            showNotification('مرحباً بك! دخلت بوضع الضيف التجريبي');
         }
 
         // Sound Effects
@@ -1312,6 +1701,22 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
                 oscillator.start(audioCtx.currentTime);
                 oscillator.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'pop') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(450, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+                gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gainNode.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'delete') {
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(340, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(130, audioCtx.currentTime + 0.12);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.12);
             }
         }
 
@@ -1408,7 +1813,23 @@
             if (!currentUser) return;
             const { data, error } = await supabaseClient.from('tasks').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
-                tasks = data.map(d => {
+                // Check if cloud timeline sync exists
+                const cloudSync = data.find(d => d.category === '__timeline_sync__');
+                if (cloudSync && cloudSync.text) {
+                    try {
+                        const parsed = JSON.parse(cloudSync.text);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            const localKey = `timeline_${currentUser.id}`;
+                            if (!localStorage.getItem(localKey)) {
+                                timelineItems = parsed;
+                                saveTimeline();
+                                renderTimeline();
+                            }
+                        }
+                    } catch(e) {}
+                }
+
+                tasks = data.filter(d => d.category !== '__timeline_sync__').map(d => {
                     const parsed = parseFolderAndText(d.text);
                     return {
                         id: d.id,
@@ -2274,6 +2695,879 @@
                 onConfirm();
                 closeModal();
             };
+        }
+
+        // ==========================================
+        // --- سهم مسار اليوم الفاخر (Day Arrow Timeline Engine) ---
+        // ==========================================
+
+        const TIMELINE_CATEGORIES = {
+            spirituality: {
+                id: 'spirituality',
+                name: 'روحانيات وعبادة',
+                icon: 'fa-kaaba',
+                color: '#10b981',
+                badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                borderClass: 'border-emerald-200 hover:border-emerald-400',
+                headerBg: 'bg-emerald-500/10 text-emerald-700',
+                dotClass: 'bg-emerald-500'
+            },
+            work: {
+                id: 'work',
+                name: 'عمل وتركيز',
+                icon: 'fa-briefcase',
+                color: '#6366f1',
+                badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                borderClass: 'border-indigo-200 hover:border-indigo-400',
+                headerBg: 'bg-indigo-500/10 text-indigo-700',
+                dotClass: 'bg-indigo-500'
+            },
+            learning: {
+                id: 'learning',
+                name: 'دراسة وتعلّم',
+                icon: 'fa-graduation-cap',
+                color: '#8b5cf6',
+                badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+                borderClass: 'border-purple-200 hover:border-purple-400',
+                headerBg: 'bg-purple-500/10 text-purple-700',
+                dotClass: 'bg-purple-500'
+            },
+            health: {
+                id: 'health',
+                name: 'رياضة وصحة',
+                icon: 'fa-heart-pulse',
+                color: '#f59e0b',
+                badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+                borderClass: 'border-amber-200 hover:border-amber-400',
+                headerBg: 'bg-amber-500/10 text-amber-700',
+                dotClass: 'bg-amber-500'
+            },
+            leisure: {
+                id: 'leisure',
+                name: 'راحة وعائلة',
+                icon: 'fa-mug-hot',
+                color: '#f43f5e',
+                badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+                borderClass: 'border-rose-200 hover:border-rose-400',
+                headerBg: 'bg-rose-500/10 text-rose-700',
+                dotClass: 'bg-rose-500'
+            },
+            general: {
+                id: 'general',
+                name: 'شخصي ومتنوع',
+                icon: 'fa-star',
+                color: '#06b6d4',
+                badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+                borderClass: 'border-cyan-200 hover:border-cyan-400',
+                headerBg: 'bg-cyan-500/10 text-cyan-700',
+                dotClass: 'bg-cyan-500'
+            }
+        };
+
+        let sortableHorizontal = null;
+        let sortableVertical = null;
+
+        function setupTimeline() {
+            startTimelineClock();
+            
+            // Load view mode preference
+            const savedMode = localStorage.getItem('timeline_view_mode');
+            if (savedMode === 'vertical' || savedMode === 'horizontal') {
+                timelineViewMode = savedMode;
+            }
+            updateTimelineViewModeUI();
+
+            // Setup Quick Add Form
+            const quickForm = document.getElementById('timelineQuickAddForm');
+            if (quickForm) {
+                quickForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const timeInput = document.getElementById('timelineQuickTime');
+                    const titleInput = document.getElementById('timelineQuickTitle');
+                    const catSelect = document.getElementById('timelineQuickCategory');
+                    
+                    const timeRange = timeInput.value.trim();
+                    const title = titleInput.value.trim();
+                    const category = catSelect.value;
+
+                    if (timeRange && title) {
+                        insertTimelineItem({
+                            timeRange,
+                            title,
+                            category,
+                            notes: '',
+                            completed: false
+                        }, timelineItems.length);
+
+                        timeInput.value = '';
+                        titleInput.value = '';
+                        timeInput.focus();
+                        playSound('pop');
+                        showNotification('تمت إضافة المحطة إلى نهاية السهم');
+                    }
+                });
+            }
+
+            // Setup SortableJS for timeline
+            initTimelineSortables();
+
+            // Load initial timeline data
+            loadTimeline();
+        }
+
+        function initTimelineSortables() {
+            const hTrack = document.getElementById('timelineTrackHorizontal');
+            const vTrack = document.getElementById('timelineTrackVertical');
+
+            const sortableOptions = {
+                draggable: '.timeline-segment-wrapper',
+                handle: '.timeline-drag-handle',
+                animation: 200,
+                ghostClass: 'opacity-40',
+                onEnd: function (evt) {
+                    const container = evt.to;
+                    const wrappers = container.querySelectorAll('.timeline-segment-wrapper');
+                    const newItems = [];
+                    wrappers.forEach(wrap => {
+                        const id = wrap.getAttribute('data-id');
+                        const item = timelineItems.find(it => it.id === id);
+                        if (item) newItems.push(item);
+                    });
+                    if (newItems.length === timelineItems.length && newItems.length > 0) {
+                        timelineItems = newItems;
+                        saveTimeline();
+                        renderTimeline();
+                        playSound('drop');
+                        showNotification('تم تحديث ترتيب مسار اليوم');
+                    }
+                }
+            };
+
+            if (hTrack && !sortableHorizontal) {
+                sortableHorizontal = new Sortable(hTrack, sortableOptions);
+            }
+            if (vTrack && !sortableVertical) {
+                sortableVertical = new Sortable(vTrack, sortableOptions);
+            }
+        }
+
+        function startTimelineClock() {
+            const timeEl = document.getElementById('timelineTimeDisplay');
+            const dateEl = document.getElementById('timelineCurrentDate');
+
+            function updateTime() {
+                const now = new Date();
+                if (timeEl) {
+                    timeEl.textContent = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+                if (dateEl) {
+                    dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                }
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function loadTimeline() {
+            const key = `timeline_${currentUser ? currentUser.id : 'guest'}`;
+            try {
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                    timelineItems = JSON.parse(stored);
+                } else {
+                    // Default template matching user prompt example
+                    timelineItems = [
+                        {
+                            id: 'tl_1',
+                            timeRange: 'من الفجر إلى الساعة 8:00',
+                            title: 'مراجعة قرآن وأذكار الصباح',
+                            notes: 'تثبيت الورد القرآني وقراءة أذكار الصباح في هدوء وسكينة',
+                            category: 'spirituality',
+                            completed: true,
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 'tl_2',
+                            timeRange: '8:00 ص إلى 12:00 م',
+                            title: 'جلسة عمل عميق وتركيز عالي',
+                            notes: 'إنهاء أهم مهمتين في العمل والتركيز دون مشتتات',
+                            category: 'work',
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 'tl_3',
+                            timeRange: '12:00 م إلى 2:00 م',
+                            title: 'صلاة الظهر وغداء وقيلولة',
+                            notes: 'أداء صلاة الظهر جماعة ثم تناول وجبة صحية مع استراحة قصيرة',
+                            category: 'leisure',
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 'tl_4',
+                            timeRange: '2:00 م إلى 5:00 م',
+                            title: 'إنجاز المهام ومتابعة المشاريع',
+                            notes: 'متابعة المراسلات وإكمال المهام العاجلة والتطوير',
+                            category: 'work',
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 'tl_5',
+                            timeRange: '5:00 م إلى 7:30 م',
+                            title: 'رياضة ومشي وقراءة',
+                            notes: 'ممارسة تمارين خفيفة ثم قراءة نافعة في كتاب لتطوير المهارات',
+                            category: 'health',
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: 'tl_6',
+                            timeRange: 'بعد العشاء إلى النوم',
+                            title: 'جلسة عائلية واستعداد للنوم',
+                            notes: 'جلسة دافئة مع الأهل وأذكار النوم استعداداً ليوم باكر ومثمر',
+                            category: 'leisure',
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        }
+                    ];
+                    saveTimeline();
+                }
+            } catch (e) {
+                console.error("Error loading timeline:", e);
+                timelineItems = [];
+            }
+            renderTimeline();
+        }
+
+        function saveTimeline() {
+            const key = `timeline_${currentUser ? currentUser.id : 'guest'}`;
+            try {
+                localStorage.setItem(key, JSON.stringify(timelineItems));
+            } catch (e) {
+                console.error("Error saving timeline to localStorage:", e);
+            }
+            debounceSyncTimelineToCloud();
+        }
+
+        let syncTimelineTimer = null;
+        function debounceSyncTimelineToCloud() {
+            if (!currentUser) return;
+            clearTimeout(syncTimelineTimer);
+            syncTimelineTimer = setTimeout(async () => {
+                try {
+                    const syncId = `tl_sync_${currentUser.id}`;
+                    const payload = JSON.stringify(timelineItems);
+                    const { data } = await supabaseClient.from('tasks').select('id').eq('id', syncId);
+                    if (data && data.length > 0) {
+                        await supabaseClient.from('tasks').update({ text: payload }).eq('id', syncId);
+                    } else {
+                        await supabaseClient.from('tasks').insert([{
+                            id: syncId,
+                            text: payload,
+                            category: '__timeline_sync__',
+                            completed: false,
+                            user_id: currentUser.id
+                        }]);
+                    }
+                } catch(err) {
+                    console.log('Supabase timeline backup notice:', err);
+                }
+            }, 1000);
+        }
+
+        function renderTimeline() {
+            const hTrack = document.getElementById('timelineTrackHorizontal');
+            const vTrack = document.getElementById('timelineTrackVertical');
+            const emptyState = document.getElementById('timelineEmptyState');
+            const hContainer = document.getElementById('timelineHorizontalContainer');
+            const vContainer = document.getElementById('timelineVerticalContainer');
+
+            // Update Progress Stats
+            const total = timelineItems.length;
+            const completed = timelineItems.filter(it => it.completed).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            const progressPercentEl = document.getElementById('timelineProgressPercent');
+            const progressBarEl = document.getElementById('timelineProgressBar');
+            const statsTextEl = document.getElementById('timelineStatsText');
+            const encouragementEl = document.getElementById('timelineEncouragement');
+
+            if (progressPercentEl) progressPercentEl.textContent = `${percent}%`;
+            if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+            if (statsTextEl) statsTextEl.textContent = `${completed} من ${total} محطات منجزة`;
+            if (encouragementEl) {
+                if (total === 0) encouragementEl.textContent = 'أضف محطتك الأولى!';
+                else if (percent === 100) encouragementEl.textContent = '🎉 إنجاز تام ومبارك!';
+                else if (percent >= 50) encouragementEl.textContent = '💪 قطعت أكثر من نصف اليوم!';
+                else encouragementEl.textContent = '🚀 بداية موفقة، واصل التقدم!';
+            }
+
+            if (total === 0) {
+                if (emptyState) emptyState.classList.remove('hidden');
+                if (hContainer) hContainer.classList.add('hidden');
+                if (vContainer) vContainer.classList.add('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            if (timelineViewMode === 'horizontal') {
+                if (hContainer) hContainer.classList.remove('hidden');
+                if (vContainer) vContainer.classList.add('hidden');
+                if (hTrack) hTrack.innerHTML = buildTimelineHTML(true);
+            } else {
+                if (hContainer) hContainer.classList.add('hidden');
+                if (vContainer) vContainer.classList.remove('hidden');
+                if (vTrack) vTrack.innerHTML = buildTimelineHTML(false);
+            }
+        }
+
+        function buildTimelineHTML(isHorizontal) {
+            let html = '';
+
+            // Initial Connector before first item (Insert at index 0)
+            html += `
+                <div class="timeline-connector group" title="إضافة محطة في بداية اليوم" onclick="openTimelineAddModal(0)">
+                    <div class="timeline-connector-line"></div>
+                    <div class="connector-indicator" title="بداية اليوم">
+                        <i class="fa-solid fa-sun text-amber-500 text-xs"></i>
+                    </div>
+                    <button type="button" class="connector-btn-add" onclick="event.stopPropagation(); openTimelineAddModal(0)" title="إضافة محطة في بداية اليوم">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            `;
+
+            timelineItems.forEach((item, index) => {
+                const cat = TIMELINE_CATEGORIES[item.category] || TIMELINE_CATEGORIES.general;
+                const isCompleted = item.completed;
+
+                // Segment Card
+                html += `
+                    <div class="timeline-segment-wrapper" data-id="${item.id}">
+                        <div class="timeline-card p-4.5 md:p-5 ${cat.borderClass} ${isCompleted ? 'is-completed' : ''} h-full flex flex-col justify-between">
+                            <!-- Top Card Header -->
+                            <div>
+                                <div class="flex items-center justify-between mb-3 gap-2">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[11px] font-black px-2 py-0.5 rounded-md ${cat.badgeClass} flex items-center gap-1 shadow-2xs">
+                                            <i class="fa-solid ${cat.icon}"></i>
+                                            <span>${cat.name}</span>
+                                        </span>
+                                        <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md font-bold font-mono">
+                                            #${index + 1}
+                                        </span>
+                                    </div>
+
+                                    <!-- Quick Card Tools -->
+                                    <div class="flex items-center gap-1 text-slate-400">
+                                        <button type="button" onclick="openTimelineEditModal('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-100 hover:text-indigo-600 flex items-center justify-center transition-colors" title="تعديل المحطة">
+                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                        </button>
+                                        <button type="button" onclick="deleteTimelineItemPrompt('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center transition-colors" title="حذف المحطة">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                        <span class="timeline-drag-handle w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-600 flex items-center justify-center cursor-grab transition-colors" title="اسحب لإعادة الترتيب">
+                                            <i class="fa-solid fa-grip-vertical text-xs"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Time Pill -->
+                                <div class="mb-2.5">
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-lg">
+                                        <i class="fa-regular fa-clock text-emerald-600 text-xs"></i>
+                                        <span dir="rtl">${escapeHTML(item.timeRange)}</span>
+                                    </span>
+                                </div>
+
+                                <!-- Title -->
+                                <h4 class="text-base md:text-lg font-black text-slate-800 timeline-title mb-1.5 leading-snug">
+                                    ${escapeHTML(item.title)}
+                                </h4>
+
+                                <!-- Notes -->
+                                ${item.notes ? `
+                                    <p class="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2" title="${escapeHTML(item.notes)}">
+                                        ${escapeHTML(item.notes)}
+                                    </p>
+                                ` : '<div class="mb-2"></div>'}
+                            </div>
+
+                            <!-- Bottom Completion Toggle & Shift Tools -->
+                            <div class="pt-3 border-t border-slate-100/90 flex items-center justify-between gap-2 mt-auto">
+                                <button type="button" onclick="toggleTimelineItemStatus('${item.id}')" class="flex items-center gap-2 text-xs font-bold transition-all px-3 py-1.5 rounded-xl ${isCompleted ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700'}">
+                                    <i class="fa-solid ${isCompleted ? 'fa-circle-check text-sm' : 'fa-circle text-slate-300 text-sm'}"></i>
+                                    <span>${isCompleted ? 'منجزة بنجاح' : 'تعليم كمنجزة'}</span>
+                                </button>
+
+                                <div class="flex items-center gap-1">
+                                    <button type="button" onclick="moveTimelineItem('${item.id}', -1)" ${index === 0 ? 'disabled' : ''} class="w-6 h-6 rounded-md hover:bg-slate-100 disabled:opacity-20 disabled:hover:bg-transparent flex items-center justify-center text-slate-500 text-[10px]" title="تقديم المحطة">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                    <button type="button" onclick="moveTimelineItem('${item.id}', 1)" ${index === timelineItems.length - 1 ? 'disabled' : ''} class="w-6 h-6 rounded-md hover:bg-slate-100 disabled:opacity-20 disabled:hover:bg-transparent flex items-center justify-center text-slate-500 text-[10px]" title="تأخير المحطة">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // The Arrow Connector between this item and the next item (Hover to show '+')
+                const isLast = (index === timelineItems.length - 1);
+                const nextItem = !isLast ? timelineItems[index + 1] : null;
+                const tooltipText = nextItem 
+                    ? `إضافة محطة بين "${escapeHTML(item.title)}" و "${escapeHTML(nextItem.title)}"` 
+                    : `إضافة محطة في نهاية اليوم`;
+
+                html += `
+                    <div class="timeline-connector group" title="${tooltipText}" onclick="openTimelineAddModal(${index + 1})">
+                        <div class="timeline-connector-line"></div>
+                        <div class="connector-indicator">
+                            <i class="fa-solid ${isHorizontal ? 'fa-chevron-left text-slate-400 group-hover:text-emerald-600' : 'fa-chevron-down text-slate-400 group-hover:text-emerald-600'} text-xs"></i>
+                        </div>
+                        <button type="button" class="connector-btn-add" onclick="event.stopPropagation(); openTimelineAddModal(${index + 1})" title="${tooltipText}" aria-label="${tooltipText}">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            // End Terminal Cap
+            html += `
+                <div class="flex-shrink-0 flex items-center justify-center py-4 px-2">
+                    <div class="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100/80 text-indigo-700 min-w-[120px]">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mb-1 text-xs">
+                            <i class="fa-solid fa-moon"></i>
+                        </div>
+                        <span class="text-xs font-black">نهاية اليوم</span>
+                        <span class="text-[10px] text-indigo-400">راحة ونوم مبارك</span>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function insertTimelineItem(itemData, targetIndex = timelineItems.length) {
+            const newItem = {
+                id: 'tl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                timeRange: itemData.timeRange,
+                title: itemData.title,
+                notes: itemData.notes || '',
+                category: itemData.category || 'general',
+                completed: !!itemData.completed,
+                createdAt: new Date().toISOString()
+            };
+
+            const idx = Math.max(0, Math.min(targetIndex, timelineItems.length));
+            timelineItems.splice(idx, 0, newItem);
+            saveTimeline();
+            renderTimeline();
+            return newItem;
+        }
+
+        function openTimelineAddModal(insertIndex = timelineItems.length) {
+            const prevItem = (insertIndex > 0 && insertIndex <= timelineItems.length) ? timelineItems[insertIndex - 1] : null;
+            const nextItem = (insertIndex < timelineItems.length) ? timelineItems[insertIndex] : null;
+
+            let contextDesc = 'سيتم إضافة هذه المحطة إلى نهاية السهم';
+            if (insertIndex === 0 && timelineItems.length > 0) {
+                contextDesc = `سيتم إدراج هذه المحطة في بداية المسار (قبل: "${escapeHTML(nextItem.title)}")`;
+            } else if (prevItem && nextItem) {
+                contextDesc = `سيتم إدراج هذه المحطة بين [${escapeHTML(prevItem.title)}] و [${escapeHTML(nextItem.title)}]`;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0';
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content border border-slate-100">
+                    <div class="p-6 md:p-7">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800">إضافة محطة إلى سهم اليوم</h3>
+                                    <p class="text-xs text-emerald-600 font-semibold">${contextDesc}</p>
+                                </div>
+                            </div>
+                            <button id="closeAddModalX" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+
+                        <form id="modalAddForm" class="space-y-4">
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="addModalTime">
+                                    <i class="fa-regular fa-clock text-emerald-600 mr-1"></i> الوقت أو الفترة
+                                </label>
+                                <input type="text" id="addModalTime" required placeholder="مثلاً: من الفجر إلى الساعة 8"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all font-medium">
+                                <div class="flex items-center gap-1.5 mt-2 flex-wrap text-[11px] text-slate-500">
+                                    <span class="text-slate-400">اقتراحات:</span>
+                                    <button type="button" onclick="document.getElementById('addModalTime').value = 'من الفجر إلى 8:00'" class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 rounded-md">الفجر - 8:00</button>
+                                    <button type="button" onclick="document.getElementById('addModalTime').value = '8:00 ص - 12:00 م'" class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 rounded-md">8:00 - 12:00</button>
+                                    <button type="button" onclick="document.getElementById('addModalTime').value = 'الظهر - العصر'" class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 rounded-md">الظهر - العصر</button>
+                                    <button type="button" onclick="document.getElementById('addModalTime').value = 'المساء'" class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 rounded-md">المساء</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="addModalTitle">
+                                    <i class="fa-solid fa-list-check text-emerald-600 mr-1"></i> المهمة أو النشاط
+                                </label>
+                                <input type="text" id="addModalTitle" required placeholder="مثلاً: مراجعة قرآن وتلاوة الورد"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all">
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5">
+                                    <i class="fa-solid fa-palette text-emerald-600 mr-1"></i> تصنيف ولون المحطة
+                                </label>
+                                <div class="grid grid-cols-3 gap-2" id="modalCategoryPills">
+                                    ${Object.values(TIMELINE_CATEGORIES).map((cat, i) => `
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="modalAddCat" value="${cat.id}" class="peer hidden" ${i === 0 ? 'checked' : ''}>
+                                            <div class="peer-checked:ring-2 peer-checked:ring-emerald-500 peer-checked:bg-emerald-50 peer-checked:border-emerald-300 border border-slate-200 rounded-xl p-2.5 text-center transition-all hover:bg-slate-50">
+                                                <i class="fa-solid ${cat.icon} text-base mb-1 block" style="color: ${cat.color}"></i>
+                                                <span class="text-[11px] font-bold text-slate-700 block">${cat.name}</span>
+                                            </div>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="addModalNotes">
+                                    <i class="fa-regular fa-note-sticky text-emerald-600 mr-1"></i> ملاحظات أو تفاصيل (اختياري)
+                                </label>
+                                <textarea id="addModalNotes" rows="2" placeholder="أي تفاصيل ترغب بتدوينها لهذه المحطة..."
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-xs transition-all resize-none"></textarea>
+                            </div>
+
+                            <div class="flex gap-3 pt-3">
+                                <button type="button" id="cancelAddBtn" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">إلغاء</button>
+                                <button type="submit" class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-black text-sm transition-all shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> تأكيد الإضافة
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            const timeInput = modal.querySelector('#addModalTime');
+            const titleInput = modal.querySelector('#addModalTitle');
+
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                timeInput.focus();
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#closeAddModalX').onclick = closeModal;
+            modal.querySelector('#cancelAddBtn').onclick = closeModal;
+
+            modal.querySelector('#modalAddForm').onsubmit = (e) => {
+                e.preventDefault();
+                const timeRange = timeInput.value.trim();
+                const title = titleInput.value.trim();
+                const notes = modal.querySelector('#addModalNotes').value.trim();
+                const catRadio = modal.querySelector('input[name="modalAddCat"]:checked');
+                const category = catRadio ? catRadio.value : 'general';
+
+                if (timeRange && title) {
+                    insertTimelineItem({
+                        timeRange,
+                        title,
+                        notes,
+                        category,
+                        completed: false
+                    }, insertIndex);
+
+                    playSound('pop');
+                    showNotification('تمت إضافة المحطة بنجاح');
+                    closeModal();
+                }
+            };
+        }
+
+        function openTimelineEditModal(id) {
+            const item = timelineItems.find(it => it.id === id);
+            if (!item) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0';
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content border border-slate-100">
+                    <div class="p-6 md:p-7">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800">تعديل محطة مسار اليوم</h3>
+                                    <p class="text-xs text-slate-400">تعديل الوقت، المهمة، أو التصنيف</p>
+                                </div>
+                            </div>
+                            <button id="closeEditModalX" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+
+                        <form id="modalEditForm" class="space-y-4">
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="editModalTime">
+                                    <i class="fa-regular fa-clock text-indigo-600 mr-1"></i> الوقت أو الفترة
+                                </label>
+                                <input type="text" id="editModalTime" value="${escapeHTML(item.timeRange)}" required
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all font-medium">
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="editModalTitle">
+                                    <i class="fa-solid fa-list-check text-indigo-600 mr-1"></i> المهمة أو النشاط
+                                </label>
+                                <input type="text" id="editModalTitle" value="${escapeHTML(item.title)}" required
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all font-bold">
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5">
+                                    <i class="fa-solid fa-palette text-indigo-600 mr-1"></i> التصنيف واللون
+                                </label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${Object.values(TIMELINE_CATEGORIES).map(cat => `
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="modalEditCat" value="${cat.id}" class="peer hidden" ${cat.id === item.category ? 'checked' : ''}>
+                                            <div class="peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 peer-checked:border-indigo-300 border border-slate-200 rounded-xl p-2.5 text-center transition-all hover:bg-slate-50">
+                                                <i class="fa-solid ${cat.icon} text-base mb-1 block" style="color: ${cat.color}"></i>
+                                                <span class="text-[11px] font-bold text-slate-700 block">${cat.name}</span>
+                                            </div>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="editModalNotes">
+                                    <i class="fa-regular fa-note-sticky text-indigo-600 mr-1"></i> الملاحظات
+                                </label>
+                                <textarea id="editModalNotes" rows="2"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white text-slate-700 text-xs transition-all resize-none">${escapeHTML(item.notes || '')}</textarea>
+                            </div>
+
+                            <div class="flex gap-3 pt-3">
+                                <button type="button" id="cancelEditBtn" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">إلغاء</button>
+                                <button type="submit" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-sm transition-all shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-check"></i> حفظ التعديل
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const modalContent = modal.querySelector('.m-modal-content');
+            const titleInput = modal.querySelector('#editModalTitle');
+
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                titleInput.focus();
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#closeEditModalX').onclick = closeModal;
+            modal.querySelector('#cancelEditBtn').onclick = closeModal;
+
+            modal.querySelector('#modalEditForm').onsubmit = (e) => {
+                e.preventDefault();
+                const timeRange = modal.querySelector('#editModalTime').value.trim();
+                const title = titleInput.value.trim();
+                const notes = modal.querySelector('#editModalNotes').value.trim();
+                const catRadio = modal.querySelector('input[name="modalEditCat"]:checked');
+                const category = catRadio ? catRadio.value : item.category;
+
+                if (timeRange && title) {
+                    item.timeRange = timeRange;
+                    item.title = title;
+                    item.notes = notes;
+                    item.category = category;
+
+                    saveTimeline();
+                    renderTimeline();
+                    playSound('pop');
+                    showNotification('تم تحديث المحطة بنجاح');
+                    closeModal();
+                }
+            };
+        }
+
+        function deleteTimelineItemPrompt(id) {
+            const item = timelineItems.find(it => it.id === id);
+            if (!item) return;
+
+            showConfirmModal(`هل أنت متأكد من حذف محطة "${escapeHTML(item.title)}" من سهم اليوم؟`, () => {
+                deleteTimelineItem(id);
+            });
+        }
+
+        function deleteTimelineItem(id) {
+            timelineItems = timelineItems.filter(it => it.id !== id);
+            saveTimeline();
+            renderTimeline();
+            playSound('delete');
+            showNotification('تم حذف المحطة من السهم');
+        }
+
+        function toggleTimelineItemStatus(id) {
+            const item = timelineItems.find(it => it.id === id);
+            if (!item) return;
+
+            item.completed = !item.completed;
+            if (item.completed) {
+                playSound('complete');
+                showNotification(`أحسنت! أتممت محطة "${item.title}" 🎉`);
+            }
+            saveTimeline();
+            renderTimeline();
+        }
+
+        function moveTimelineItem(id, direction) {
+            const index = timelineItems.findIndex(it => it.id === id);
+            if (index === -1) return;
+
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= timelineItems.length) return;
+
+            const temp = timelineItems[index];
+            timelineItems[index] = timelineItems[targetIndex];
+            timelineItems[targetIndex] = temp;
+
+            saveTimeline();
+            renderTimeline();
+            playSound('drop');
+        }
+
+        function toggleTimelineViewMode() {
+            timelineViewMode = (timelineViewMode === 'horizontal') ? 'vertical' : 'horizontal';
+            localStorage.setItem('timeline_view_mode', timelineViewMode);
+            updateTimelineViewModeUI();
+            renderTimeline();
+        }
+
+        function updateTimelineViewModeUI() {
+            const label = document.getElementById('timelineViewModeLabel');
+            if (label) {
+                label.textContent = (timelineViewMode === 'horizontal') ? 'عرض رأسي' : 'عرض أفقي';
+            }
+        }
+
+        function applyStarterTimelineTemplate() {
+            showConfirmModal('هل ترغب بتفعيل الروتين اليومي المقترح الممتد من الفجر حتى المساء؟', () => {
+                timelineItems = [
+                    {
+                        id: 'tl_temp_1',
+                        timeRange: 'من الفجر إلى الساعة 8:00',
+                        title: 'مراجعة قرآن وأذكار الصباح',
+                        notes: 'تثبيت الورد القرآني وقراءة أذكار الصباح في هدوء وسكينة',
+                        category: 'spirituality',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'tl_temp_2',
+                        timeRange: '8:00 ص إلى 12:00 م',
+                        title: 'جلسة عمل عميق وتركيز عالي',
+                        notes: 'إنجاز أهم المهام والمشاريع دون مقاطعات',
+                        category: 'work',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'tl_temp_3',
+                        timeRange: '12:00 م إلى 2:00 م',
+                        title: 'صلاة الظهر وغداء وقيلولة',
+                        notes: 'تأدية الصلاة وتناول وجبة صحية واستراحة لتجديد النشاط',
+                        category: 'leisure',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'tl_temp_4',
+                        timeRange: '2:00 م إلى 5:00 م',
+                        title: 'إنجاز المهام ومتابعة المشاريع',
+                        notes: 'متابعة الاتصالات والمراسلات والمشاريع التطويرية',
+                        category: 'work',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'tl_temp_5',
+                        timeRange: '5:00 م إلى 7:30 م',
+                        title: 'رياضة ومشي وقراءة',
+                        notes: 'تمارين رياضية ومشي في الهواء الطلق وقراءة نافعة',
+                        category: 'health',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'tl_temp_6',
+                        timeRange: 'بعد العشاء إلى النوم',
+                        title: 'جلسة عائلية واستعداد للنوم',
+                        notes: 'وقت هادئ مع العائلة وأذكار النوم استعداداً ليوم باكر ومثمر',
+                        category: 'leisure',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                saveTimeline();
+                renderTimeline();
+                playSound('complete');
+                showNotification('تم تفعيل الروتين اليومي المقترح بنجاح');
+            });
+        }
+
+        function clearTimelinePrompt() {
+            showConfirmModal('هل أنت متأكد من رغبتك في تفريغ سهم مسار اليوم بالكامل؟', () => {
+                timelineItems = [];
+                saveTimeline();
+                renderTimeline();
+                playSound('delete');
+                showNotification('تم تفريغ سهم مسار اليوم');
+            });
+        }
+
+        function setQuickTimePreset(time, task) {
+            const timeInput = document.getElementById('timelineQuickTime');
+            const titleInput = document.getElementById('timelineQuickTitle');
+            if (timeInput) timeInput.value = time;
+            if (titleInput) {
+                titleInput.value = task;
+                titleInput.focus();
+            }
         }
     </script>
 </body>
