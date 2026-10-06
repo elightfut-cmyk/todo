@@ -1549,6 +1549,9 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
                     loadDebts();
                 })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'day_timeline' }, () => {
+                    loadTimeline();
+                })
                 .subscribe();
         }
 
@@ -2869,7 +2872,36 @@
             setInterval(updateTime, 1000);
         }
 
-        function loadTimeline() {
+        async function loadTimeline() {
+            if (currentUser && currentUser.id !== 'guest_user') {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('day_timeline')
+                        .select('*')
+                        .eq('user_id', currentUser.id)
+                        .order('sort_order', { ascending: true });
+
+                    if (data && !error && data.length > 0) {
+                        timelineItems = data.map(d => ({
+                            id: d.id,
+                            timeRange: d.time_range,
+                            title: d.title,
+                            notes: d.notes || '',
+                            category: d.category || 'general',
+                            completed: !!d.completed,
+                            sortOrder: d.sort_order ?? 0,
+                            createdAt: d.created_at
+                        }));
+                        const key = `timeline_${currentUser.id}`;
+                        localStorage.setItem(key, JSON.stringify(timelineItems));
+                        renderTimeline();
+                        return;
+                    }
+                } catch (e) {
+                    // Fallback to localStorage if table doesn't exist yet
+                }
+            }
+
             const key = `timeline_${currentUser ? currentUser.id : 'guest'}`;
             try {
                 const stored = localStorage.getItem(key);
@@ -3168,6 +3200,23 @@
             timelineItems.splice(idx, 0, newItem);
             saveTimeline();
             renderTimeline();
+
+            if (currentUser && currentUser.id !== 'guest_user') {
+                supabaseClient.from('day_timeline').insert([{
+                    id: newItem.id,
+                    user_id: currentUser.id,
+                    time_range: newItem.timeRange,
+                    title: newItem.title,
+                    notes: newItem.notes,
+                    category: newItem.category,
+                    completed: newItem.completed,
+                    sort_order: idx,
+                    created_at: newItem.createdAt
+                }]).then(({ error }) => {
+                    if (error) console.log('day_timeline insert notice:', error.message);
+                });
+            }
+
             return newItem;
         }
 
@@ -3421,6 +3470,15 @@
                     playSound('pop');
                     showNotification('تم تحديث المحطة بنجاح');
                     closeModal();
+
+                    if (currentUser && currentUser.id !== 'guest_user') {
+                        supabaseClient.from('day_timeline').update({
+                            time_range: item.timeRange,
+                            title: item.title,
+                            notes: item.notes,
+                            category: item.category
+                        }).eq('id', item.id).then(() => {});
+                    }
                 }
             };
         }
@@ -3440,6 +3498,10 @@
             renderTimeline();
             playSound('delete');
             showNotification('تم حذف المحطة من السهم');
+
+            if (currentUser && currentUser.id !== 'guest_user') {
+                supabaseClient.from('day_timeline').delete().eq('id', id).then(() => {});
+            }
         }
 
         function toggleTimelineItemStatus(id) {
@@ -3453,6 +3515,10 @@
             }
             saveTimeline();
             renderTimeline();
+
+            if (currentUser && currentUser.id !== 'guest_user') {
+                supabaseClient.from('day_timeline').update({ completed: item.completed }).eq('id', id).then(() => {});
+            }
         }
 
         function moveTimelineItem(id, direction) {
@@ -3469,6 +3535,12 @@
             saveTimeline();
             renderTimeline();
             playSound('drop');
+
+            if (currentUser && currentUser.id !== 'guest_user') {
+                timelineItems.forEach((it, order) => {
+                    supabaseClient.from('day_timeline').update({ sort_order: order }).eq('id', it.id).then(() => {});
+                });
+            }
         }
 
         function toggleTimelineViewMode() {
