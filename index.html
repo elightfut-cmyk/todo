@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>منصة التنظيم - المهام والأمانات والديون والملفات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -35,6 +35,11 @@
         }
     </script>
     <style>
+        html, body {
+            touch-action: pan-x pan-y;
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
             background-color: #f8fafc;
             color: #334155;
@@ -4401,28 +4406,30 @@
                     }
                 }, { passive: false });
 
-                // Pinch-to-zoom on touch screens
+                // Pinch-to-zoom on touch screens (حصرياً لمسار المهام)
                 let pinchStartDist = null;
                 let pinchStartZoom = 1.0;
 
                 container.addEventListener('touchstart', (e) => {
                     if (e.touches && e.touches.length === 2) {
+                        e.preventDefault();
                         const dx = e.touches[0].clientX - e.touches[1].clientX;
                         const dy = e.touches[0].clientY - e.touches[1].clientY;
                         pinchStartDist = Math.hypot(dx, dy);
                         pinchStartZoom = timelineZoomLevel;
                     }
-                }, { passive: true });
+                }, { passive: false });
 
                 container.addEventListener('touchmove', (e) => {
                     if (e.touches && e.touches.length === 2 && pinchStartDist) {
+                        e.preventDefault();
                         const dx = e.touches[0].clientX - e.touches[1].clientX;
                         const dy = e.touches[0].clientY - e.touches[1].clientY;
                         const dist = Math.hypot(dx, dy);
                         const factor = dist / pinchStartDist;
                         setTimelineZoom(pinchStartZoom * factor);
                     }
-                }, { passive: true });
+                }, { passive: false });
 
                 container.addEventListener('touchend', (e) => {
                     if (!e.touches || e.touches.length < 2) {
@@ -4431,6 +4438,52 @@
                 }, { passive: true });
             });
         }
+
+        // ==========================================
+        // --- إلغاء تكبير وتصغير الموقع بالكامل وحصره فقط في مسار المهام ---
+        // ==========================================
+        // 1. منع إيماءات التكبير الخاصة بمتصفحات سفاري وويب كيت على مستوى الصفحة كاملة
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('gesturechange', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('gestureend', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 2. منع اللمس المتعدد (Pinch to zoom) أينما كان خارج حاوية مسار المهام
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length > 1) {
+                const inTimeline = e.target && e.target.closest && e.target.closest('#timelineHorizontalContainer, #timelineVerticalContainer');
+                if (!inTimeline) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        // 3. منع تكبير الصفحة بعجلة الماوس خارج مسار المهام (Ctrl + Wheel / Meta + Wheel)
+        window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                const inTimeline = e.target && e.target.closest && e.target.closest('#timelineHorizontalContainer, #timelineVerticalContainer');
+                if (!inTimeline) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        // 4. منع اختصارات تكبير المتصفح عبر لوحة المفاتيح خارج مسار المهام (Ctrl + +/-/0)
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
+                const inTimeline = e.target && e.target.closest && e.target.closest('#timelineHorizontalContainer, #timelineVerticalContainer');
+                if (!inTimeline) {
+                    e.preventDefault();
+                }
+            }
+        });
 
         // ==========================================
         // --- محرك قوالب مسار اليوم (Day Timeline Templates Engine) ---
