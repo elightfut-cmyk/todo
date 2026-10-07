@@ -2147,17 +2147,55 @@
         }
 
         function createNewFolderFromDropdown() {
-            const name = prompt('أدخل اسم الملف الجديد:');
-            if (name && name.trim()) {
-                const folderName = name.trim();
-                const taskFolderInput = document.getElementById('taskFolderInput');
-                if (taskFolderInput) taskFolderInput.value = folderName;
-                closeTaskFolderDropdown();
-                if (!customFolders.includes(folderName)) {
-                    customFolders.push(folderName);
-                    saveCustomFolders();
-                    updateFolderDatalist();
-                }
+            closeTaskFolderDropdown();
+            openNewFolderModal();
+        }
+
+        function openNewFolderModal() {
+            const modal = document.getElementById('newFolderModal');
+            const input = document.getElementById('newFolderNameInput');
+            if(modal && input) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modal.querySelector('.transform').classList.remove('scale-95');
+                    modal.querySelector('.transform').classList.add('scale-100');
+                    input.value = '';
+                    input.focus();
+                }, 10);
+            }
+        }
+
+        function closeNewFolderModal() {
+            const modal = document.getElementById('newFolderModal');
+            if(modal) {
+                modal.classList.add('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-100');
+                modal.querySelector('.transform').classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function setupNewFolderModal() {
+            const form = document.getElementById('newFolderForm');
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const input = document.getElementById('newFolderNameInput');
+                    if(input && input.value.trim()) {
+                        const folderName = input.value.trim();
+                        const taskFolderInput = document.getElementById('taskFolderInput');
+                        if (taskFolderInput) taskFolderInput.value = folderName;
+                        if (!customFolders.includes(folderName)) {
+                            customFolders.push(folderName);
+                            saveCustomFolders();
+                            updateFolderDatalist();
+                        }
+                        closeNewFolderModal();
+                    }
+                });
             }
         }
 
@@ -2217,6 +2255,7 @@
         }
 
         function setupForm() {
+            setupNewFolderModal();
             setupTaskFolderDropdown();
             // setupTaskSuggestions();
             const form = document.getElementById('taskForm');
@@ -4994,5 +5033,36 @@
             };
         }
     </script>
+
+    <!-- New Folder Modal -->
+    <div id="newFolderModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-all transition-transform duration-300">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-brand-500"></i> إنشاء ملف جديد
+                </h3>
+                <button type="button" onclick="closeNewFolderModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="newFolderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-slate-700 text-sm font-bold mb-2" for="newFolderNameInput">اسم الملف</label>
+                        <input type="text" id="newFolderNameInput" required placeholder="مثال: مشاريع شخصية"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white text-slate-700 transition-all">
+                    </div>
+                    <div class="pt-2 flex gap-3">
+                        <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check"></i> حفظ
+                        </button>
+                        <button type="button" onclick="closeNewFolderModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
