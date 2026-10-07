@@ -444,13 +444,8 @@
                 </h2>
                 <form id="taskForm" class="flex flex-col md:flex-row gap-3">
                     <div class="flex-grow relative">
-                        <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟ (اضغط هنا لاختيار مهمة أو اكتب)" required autocomplete="off"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 pl-10">
-                        <button type="button" id="taskSuggestionsToggleBtn" onclick="toggleTaskSuggestionsDropdown(event)" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors p-1" title="عرض المهام للاختيار منها">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </button>
-                        <div id="taskSuggestionsDropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 max-h-80 overflow-y-auto custom-scrollbar p-2 transition-all">
-                        </div>
+                        <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟" required autocomplete="off"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
                     </div>
                     <div class="flex-shrink-0 w-full md:w-56">
                         <input type="text" id="taskFolderInput" list="folderDatalist" placeholder="الملف (مثلاً: منصة جيبها)"
@@ -2117,7 +2112,7 @@
         }
 
         function setupForm() {
-            setupTaskSuggestions();
+            // setupTaskSuggestions();
             const form = document.getElementById('taskForm');
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -2514,11 +2509,7 @@
 
             Object.values(lists).forEach(list => { if (list) list.innerHTML = ''; });
 
-            const filteredTrusts = trusts.filter(t => {
-                if (selectedFolder === 'all') return true;
-                if (selectedFolder === '__general__') return !t.folder;
-                return t.folder === selectedFolder;
-            });
+            const filteredTrusts = trusts;
 
             const sorted = [...filteredTrusts].sort((a, b) => {
                 if (a.completed === b.completed) {
@@ -2833,11 +2824,7 @@
             let toMeRemaining = 0;
             let toMePaid = 0;
 
-            const filteredByFolder = debts.filter(d => {
-                if (selectedFolder === 'all') return true;
-                if (selectedFolder === '__general__') return !d.folder;
-                return d.folder === selectedFolder;
-            });
+            const filteredByFolder = debts;
 
             // Calculate stats for current folder
             filteredByFolder.forEach(d => {
