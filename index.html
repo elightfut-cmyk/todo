@@ -117,63 +117,30 @@
         /* --- سهم مسار اليوم الأنيق (Day Arrow Timeline Styles) --- */
         .timeline-scroll-container {
             position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
             scrollbar-width: thin;
+            width: 100%;
         }
 
         .timeline-horizontal-track {
-            display: flex;
+            display: inline-flex;
             align-items: stretch;
             gap: 0;
             padding: 1.5rem 0.5rem;
-            overflow-x: auto;
             scroll-behavior: smooth;
             direction: rtl;
-        }
-
-        :root {
-            --timeline-card-width: 320px;
+            width: max-content;
+            margin: 0 auto;
+            transform-origin: right top;
+            transition: zoom 0.15s ease-out;
         }
 
         .timeline-segment-wrapper {
             position: relative;
             flex-shrink: 0;
-            width: var(--timeline-card-width, 320px);
-            transition: width 0.15s ease-out;
-        }
-
-        @media (min-width: 768px) {
-            .timeline-segment-wrapper {
-                width: var(--timeline-card-width, 320px);
-            }
-        }
-
-        .timeline-card-resize-handle {
-            position: absolute;
-            bottom: 6px;
-            left: 6px;
-            width: 24px;
-            height: 24px;
-            border-radius: 8px;
-            background: rgba(241, 245, 249, 0.95);
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: nwse-resize;
-            touch-action: none;
-            user-select: none;
-            z-index: 15;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        .timeline-card-resize-handle:hover,
-        .timeline-card-resize-handle:active {
-            background: #10b981;
-            border-color: #059669;
-            color: #ffffff;
-            transform: scale(1.15);
+            width: 310px;
+            max-width: 85vw;
         }
 
         /* Task Suggestions Dropdown */
@@ -303,6 +270,8 @@
             padding: 1rem 0;
             max-width: 680px;
             margin: 0 auto;
+            transform-origin: top center;
+            transition: zoom 0.15s ease-out;
         }
 
         .timeline-vertical-track .timeline-segment-wrapper {
@@ -865,20 +834,25 @@
                         </div>
 
                         <div class="flex items-center gap-2 flex-wrap">
-                            <!-- Manual Hand Zoom Control Bar (تكبير وتصغير باليد) -->
-                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 flex items-center gap-2 text-white text-xs shadow-xs" title="تحكم يدوي بحجم البطاقات باليد">
-                                <span class="flex items-center gap-1 text-emerald-300 font-bold">
-                                    <i class="fa-solid fa-hand text-amber-300"></i>
-                                    <span class="hidden sm:inline">حجم البطاقات:</span>
+                            <!-- Track Zoom Controls (تكبير وتصغير مسار البطاقات) -->
+                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 flex items-center gap-2 text-white text-xs shadow-xs" title="تكبير وتصغير مسار البطاقات">
+                                <button type="button" onclick="fitTimelineToScreen()" class="px-2.5 py-1 bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-200 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-emerald-400/30 shadow-xs" title="تصغير تلقائي لرؤية المسار كاملاً على الشاشة بدون تمرير">
+                                    <i class="fa-solid fa-expand text-[10px]"></i>
+                                    <span class="font-bold">المسار كاملاً</span>
+                                </button>
+                                <div class="h-4 w-px bg-white/20"></div>
+                                <span class="flex items-center gap-1 text-emerald-300 font-bold hidden sm:inline-flex">
+                                    <i class="fa-solid fa-magnifying-glass text-amber-300 text-[10px]"></i>
+                                    <span>تكبير:</span>
                                 </span>
-                                <button type="button" onclick="adjustTimelineCardWidth(-30)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تصغير باليد">
+                                <button type="button" onclick="adjustTimelineZoom(-0.1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تصغير (-10%)">
                                     <i class="fa-solid fa-minus text-[10px]"></i>
                                 </button>
-                                <input type="range" id="timelineZoomSlider" min="240" max="480" step="10" value="320" oninput="setTimelineCardWidth(this.value)" class="w-16 sm:w-20 accent-emerald-400 cursor-pointer" title="اسحب باليد للتكبير والتصغير">
-                                <button type="button" onclick="adjustTimelineCardWidth(30)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تكبير باليد">
+                                <input type="range" id="timelineZoomSlider" min="25" max="150" step="5" value="100" oninput="setTimelineZoom(this.value / 100)" class="w-16 sm:w-20 accent-emerald-400 cursor-pointer" title="اسحب لتكبير أو تصغير المسار">
+                                <button type="button" onclick="adjustTimelineZoom(0.1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تكبير (+10%)">
                                     <i class="fa-solid fa-plus text-[10px]"></i>
                                 </button>
-                                <button type="button" onclick="resetTimelineCardWidth()" class="text-[10px] text-slate-300 hover:text-white px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors" title="إعادة الحجم الافتراضي">
+                                <button type="button" id="timelineZoomPercentLabel" onclick="resetTimelineZoom()" class="text-[10px] text-slate-200 hover:text-white px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors font-mono font-bold min-w-[34px] text-center" title="استعادة الحجم الطبيعي 100%">
                                     100%
                                 </button>
                             </div>
@@ -985,6 +959,24 @@
                     <div id="timelineTrackVertical" class="timeline-vertical-track">
                         <!-- Segments & Connectors inserted dynamically in vertical mode -->
                     </div>
+                </div>
+
+                <!-- Floating Mini Zoom Controls (مفتاح تكبير/تصغير عائم مباشر على لوحة المسار) -->
+                <div id="timelineFloatingZoomBar" class="absolute bottom-4 left-4 z-20 bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-slate-700/60 shadow-xl flex items-center gap-1.5 text-white text-xs select-none">
+                    <button type="button" onclick="fitTimelineToScreen()" class="px-2.5 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 shadow-sm" title="تصغير لرؤية المسار كاملاً بدون تمرير">
+                        <i class="fa-solid fa-expand text-[10px]"></i>
+                        <span>المسار كاملاً</span>
+                    </button>
+                    <div class="h-3.5 w-px bg-slate-700 mx-0.5"></div>
+                    <button type="button" onclick="adjustTimelineZoom(-0.1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تصغير (-10%)">
+                        <i class="fa-solid fa-minus text-[10px]"></i>
+                    </button>
+                    <button type="button" id="floatingZoomLabel" onclick="resetTimelineZoom()" class="text-[11px] font-mono font-bold text-emerald-300 min-w-[36px] text-center px-1 py-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer" title="استعادة 100%">
+                        100%
+                    </button>
+                    <button type="button" onclick="adjustTimelineZoom(0.1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تكبير (+10%)">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                    </button>
                 </div>
 
                 <!-- Empty State -->
@@ -3361,7 +3353,7 @@
 
         function setupTimeline() {
             startTimelineClock();
-            setupTimelineHandZoom();
+            setupTimelineTrackZoom();
             loadTimelineTemplates();
             
             // Load view mode preference
@@ -3658,14 +3650,17 @@
                 else encouragementEl.textContent = '🚀 بداية موفقة، واصل التقدم!';
             }
 
+            const floatingZoomBar = document.getElementById('timelineFloatingZoomBar');
             if (total === 0) {
                 if (emptyState) emptyState.classList.remove('hidden');
                 if (hContainer) hContainer.classList.add('hidden');
                 if (vContainer) vContainer.classList.add('hidden');
+                if (floatingZoomBar) floatingZoomBar.classList.add('hidden');
                 return;
             }
 
             if (emptyState) emptyState.classList.add('hidden');
+            if (floatingZoomBar) floatingZoomBar.classList.remove('hidden');
 
             if (timelineViewMode === 'horizontal') {
                 if (hContainer) hContainer.classList.remove('hidden');
@@ -3676,6 +3671,8 @@
                 if (vContainer) vContainer.classList.remove('hidden');
                 if (vTrack) vTrack.innerHTML = buildTimelineHTML(false);
             }
+
+            applyCurrentTimelineZoom();
         }
 
         function buildTimelineHTML(isHorizontal) {
@@ -3765,11 +3762,6 @@
                                         <i class="fa-solid fa-chevron-left"></i>
                                     </button>
                                 </div>
-                            </div>
-
-                            <!-- Manual Resize Handle (باليد فقط) -->
-                            <div class="timeline-card-resize-handle" onmousedown="startTimelineCardResize(event)" ontouchstart="startTimelineCardResize(event)" title="اسحب باليد لتكبير أو تصغير البطاقات">
-                                <i class="fa-solid fa-up-right-and-down-left-from-center text-[9px]"></i>
                             </div>
                         </div>
                     </div>
@@ -4297,107 +4289,147 @@
         }
 
         // ==========================================
-        // --- التحكم بحجم بطاقات السهم باليد (Hand Zoom Engine) ---
+        // --- محرك تكبير وتصغير مسار البطاقات (Card Maker Track Zoom Engine) ---
         // ==========================================
-        let timelineCardWidth = 320;
+        let timelineZoomLevel = 1.0;
 
-        function setTimelineCardWidth(val) {
-            const width = Math.min(520, Math.max(220, parseInt(val, 10) || 320));
-            timelineCardWidth = width;
-            document.documentElement.style.setProperty('--timeline-card-width', `${width}px`);
+        function applyCurrentTimelineZoom() {
+            const hTrack = document.getElementById('timelineTrackHorizontal');
+            const vTrack = document.getElementById('timelineTrackVertical');
             const slider = document.getElementById('timelineZoomSlider');
-            if (slider && parseInt(slider.value, 10) !== width) {
-                slider.value = width;
+            const headerLabel = document.getElementById('timelineZoomPercentLabel');
+            const floatingLabel = document.getElementById('floatingZoomLabel');
+
+            if (hTrack) {
+                hTrack.style.zoom = timelineZoomLevel;
             }
+            if (vTrack) {
+                vTrack.style.zoom = timelineZoomLevel;
+            }
+
+            const percentText = `${Math.round(timelineZoomLevel * 100)}%`;
+            if (slider) slider.value = Math.round(timelineZoomLevel * 100);
+            if (headerLabel) headerLabel.textContent = percentText;
+            if (floatingLabel) floatingLabel.textContent = percentText;
+        }
+
+        function setTimelineZoom(level, notify = false) {
+            // Clamp between 0.25 (25% zoom out) and 1.50 (150% zoom in)
+            const clamped = Math.min(1.50, Math.max(0.25, Math.round(level * 100) / 100));
+            timelineZoomLevel = clamped;
+            applyCurrentTimelineZoom();
+
             try {
-                localStorage.setItem('timeline_card_width', String(width));
-            } catch (e) {}
+                localStorage.setItem('timeline_track_zoom', String(clamped));
+            } catch(e) {}
+
+            if (notify) {
+                showNotification(`تكبير المسار: ${Math.round(clamped * 100)}%`);
+            }
         }
 
-        function adjustTimelineCardWidth(delta) {
-            setTimelineCardWidth(timelineCardWidth + delta);
+        function adjustTimelineZoom(delta) {
+            setTimelineZoom(timelineZoomLevel + delta, true);
         }
 
-        function resetTimelineCardWidth() {
-            setTimelineCardWidth(320);
-            showNotification('تمت استعادة حجم البطاقات الافتراضي');
+        function resetTimelineZoom() {
+            setTimelineZoom(1.0, true);
+            showNotification('تمت استعادة حجم المسار الطبيعي (100%)');
         }
 
-        // Drag handle resizing by mouse / touch on card corner (باليد فقط)
-        function startTimelineCardResize(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        // Fit entire timeline path to screen without horizontal scrolling (رؤية المسار كاملاً)
+        function fitTimelineToScreen() {
+            const container = document.getElementById('timelineHorizontalContainer');
+            const track = document.getElementById('timelineTrackHorizontal');
+            if (!container || !track || !timelineItems || timelineItems.length === 0) {
+                showNotification('أضف بطاقات أولاً لحساب حجم المسار');
+                return;
+            }
 
-            const isTouch = e.type === 'touchstart';
-            const startX = isTouch ? e.touches[0].clientX : e.clientX;
-            const initialWidth = timelineCardWidth;
+            const prevZoom = timelineZoomLevel;
+            track.style.zoom = 1;
+            const naturalWidth = track.scrollWidth;
+            track.style.zoom = prevZoom;
 
-            const onMove = (moveEvt) => {
-                const currentX = isTouch ? moveEvt.touches[0].clientX : moveEvt.clientX;
-                // In RTL layout, expanding to the left increases card width
-                const diff = startX - currentX;
-                setTimelineCardWidth(initialWidth + diff);
-            };
+            const availableWidth = container.clientWidth - 32;
 
-            const onEnd = () => {
-                if (isTouch) {
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('touchend', onEnd);
-                } else {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onEnd);
-                }
-            };
+            if (naturalWidth <= 0 || availableWidth <= 0) return;
 
-            if (isTouch) {
-                window.addEventListener('touchmove', onMove, { passive: false });
-                window.addEventListener('touchend', onEnd);
+            if (naturalWidth <= availableWidth) {
+                setTimelineZoom(1.0);
+                showNotification('المسار معروض كاملاً بالحجم الطبيعي (100%)');
+                return;
+            }
+
+            let targetZoom = availableWidth / naturalWidth;
+            targetZoom = Math.min(1.0, Math.max(0.25, Math.floor(targetZoom * 100) / 100));
+
+            if (Math.abs(timelineZoomLevel - targetZoom) < 0.04) {
+                setTimelineZoom(1.0);
+                showNotification('تمت العودة إلى الحجم الطبيعي (100%)');
             } else {
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onEnd);
+                setTimelineZoom(targetZoom);
+                showNotification(`تم تصغير العرض لرؤية المسار كاملاً على الشاشة (${Math.round(targetZoom * 100)}%)`);
             }
         }
 
-        // Pinch-to-zoom on touch devices (باليد بلمس الشاشة)
-        function setupTimelineHandZoom() {
+        function setupTimelineTrackZoom() {
             try {
-                const saved = localStorage.getItem('timeline_card_width');
+                const saved = localStorage.getItem('timeline_track_zoom');
                 if (saved) {
-                    setTimelineCardWidth(parseInt(saved, 10));
+                    const parsed = parseFloat(saved);
+                    if (!isNaN(parsed) && parsed >= 0.25 && parsed <= 1.5) {
+                        timelineZoomLevel = parsed;
+                    }
                 }
             } catch(e) {}
 
-            const track = document.getElementById('timelineHorizontalContainer');
-            if (!track) return;
+            applyCurrentTimelineZoom();
 
-            let initialPinchDistance = null;
-            let initialPinchWidth = timelineCardWidth;
+            const hContainer = document.getElementById('timelineHorizontalContainer');
+            const vContainer = document.getElementById('timelineVerticalContainer');
 
-            track.addEventListener('touchstart', (e) => {
-                if (e.touches && e.touches.length === 2) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    initialPinchDistance = Math.hypot(dx, dy);
-                    initialPinchWidth = timelineCardWidth;
-                }
-            }, { passive: true });
+            [hContainer, vContainer].forEach(container => {
+                if (!container) return;
 
-            track.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches.length === 2 && initialPinchDistance) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const dist = Math.hypot(dx, dy);
-                    const scale = dist / initialPinchDistance;
-                    const newWidth = Math.round(initialPinchWidth * scale);
-                    setTimelineCardWidth(newWidth);
-                }
-            }, { passive: true });
+                // Mouse Wheel Zoom (Ctrl + Wheel or Alt + Wheel)
+                container.addEventListener('wheel', (e) => {
+                    if (e.ctrlKey || e.metaKey || e.altKey) {
+                        e.preventDefault();
+                        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+                        adjustTimelineZoom(delta);
+                    }
+                }, { passive: false });
 
-            track.addEventListener('touchend', (e) => {
-                if (!e.touches || e.touches.length < 2) {
-                    initialPinchDistance = null;
-                }
-            }, { passive: true });
+                // Pinch-to-zoom on touch screens
+                let pinchStartDist = null;
+                let pinchStartZoom = 1.0;
+
+                container.addEventListener('touchstart', (e) => {
+                    if (e.touches && e.touches.length === 2) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        pinchStartDist = Math.hypot(dx, dy);
+                        pinchStartZoom = timelineZoomLevel;
+                    }
+                }, { passive: true });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (e.touches && e.touches.length === 2 && pinchStartDist) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        const dist = Math.hypot(dx, dy);
+                        const factor = dist / pinchStartDist;
+                        setTimelineZoom(pinchStartZoom * factor);
+                    }
+                }, { passive: true });
+
+                container.addEventListener('touchend', (e) => {
+                    if (!e.touches || e.touches.length < 2) {
+                        pinchStartDist = null;
+                    }
+                }, { passive: true });
+            });
         }
 
         // ==========================================
