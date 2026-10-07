@@ -130,17 +130,58 @@
             direction: rtl;
         }
 
+        :root {
+            --timeline-card-width: 320px;
+        }
+
         .timeline-segment-wrapper {
             position: relative;
             flex-shrink: 0;
-            width: 290px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            width: var(--timeline-card-width, 320px);
+            transition: width 0.15s ease-out;
         }
 
         @media (min-width: 768px) {
             .timeline-segment-wrapper {
-                width: 320px;
+                width: var(--timeline-card-width, 320px);
             }
+        }
+
+        .timeline-card-resize-handle {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: rgba(241, 245, 249, 0.95);
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: nwse-resize;
+            touch-action: none;
+            user-select: none;
+            z-index: 15;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .timeline-card-resize-handle:hover,
+        .timeline-card-resize-handle:active {
+            background: #10b981;
+            border-color: #059669;
+            color: #ffffff;
+            transform: scale(1.15);
+        }
+
+        /* Task Suggestions Dropdown */
+        .task-suggestion-item {
+            transition: all 0.15s ease;
+        }
+        .task-suggestion-item:hover {
+            background-color: #f0fdf4;
         }
 
         .timeline-card {
@@ -428,9 +469,14 @@
                     <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة مهمة جديدة
                 </h2>
                 <form id="taskForm" class="flex flex-col md:flex-row gap-3">
-                    <div class="flex-grow">
-                        <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟ (مثال: إضافة فيديوهات)" required
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700">
+                    <div class="flex-grow relative">
+                        <input type="text" id="taskInput" placeholder="ماذا تريد أن تنجز؟ (اضغط هنا لاختيار مهمة أو اكتب)" required autocomplete="off"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white text-slate-700 pl-10">
+                        <button type="button" id="taskSuggestionsToggleBtn" onclick="toggleTaskSuggestionsDropdown(event)" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors p-1" title="عرض المهام للاختيار منها">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="taskSuggestionsDropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 max-h-80 overflow-y-auto custom-scrollbar p-2 transition-all">
+                        </div>
                     </div>
                     <div class="flex-shrink-0 w-full md:w-56">
                         <input type="text" id="taskFolderInput" list="folderDatalist" placeholder="الملف (مثلاً: منصة جيبها)"
@@ -450,6 +496,26 @@
                         <i class="fa-solid fa-plus"></i> إضافة
                     </button>
                 </form>
+            </div>
+
+            <!-- Tasks Folder Filter Bar (تصفية المهام حسب الملفات) -->
+            <div class="bg-white rounded-2xl shadow-sm p-3.5 md:p-4 mb-6 border border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5 pb-2 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-xs shadow-2xs">
+                            <i class="fa-solid fa-folder-tree"></i>
+                        </span>
+                        <span class="text-xs md:text-sm font-black text-slate-800">فلترة المهام حسب الملف:</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="showCreateFolderModal()" class="text-xs text-brand-600 hover:text-brand-700 font-bold bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-plus"></i> إنشاء ملف جديد
+                        </button>
+                    </div>
+                </div>
+                <div id="tasksFolderChipsContainer" class="flex items-center gap-2 overflow-x-auto w-full pb-1 custom-scrollbar">
+                    <!-- Dynamic chips -->
+                </div>
             </div>
 
             <div class="matrix-grid grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -605,34 +671,84 @@
 
         <!-- Debts View -->
         <div id="debts-view" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <div class="bg-red-50 rounded-2xl p-6 border border-red-100 flex items-center justify-between shadow-sm">
+            <!-- Debts Stats: 3 Cards (ديون عليّ, ديون لي, صافي الموقف) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- 1. ديون عليّ -->
+                <div class="bg-gradient-to-br from-red-50 to-rose-50/50 rounded-2xl p-5 border border-red-100 flex items-center justify-between shadow-sm">
                     <div>
-                        <p class="text-sm font-bold text-red-600 mb-1">إجمالي الديون المتبقية</p>
-                        <h3 id="totalRemainingDebts" class="text-3xl font-black text-red-700">0</h3>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            <p class="text-xs font-bold text-red-600">ديون عليّ (مطلوب سدادها)</p>
+                        </div>
+                        <h3 id="totalRemainingOnMe" class="text-2xl md:text-3xl font-black text-red-700">0</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            المسدد: <span id="totalPaidOnMe" class="font-bold text-emerald-600">0</span>
+                        </p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl">
-                        <i class="fa-solid fa-money-bill-wave"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </div>
                 </div>
-                <div class="bg-brand-50 rounded-2xl p-6 border border-brand-100 flex items-center justify-between shadow-sm">
+
+                <!-- 2. ديون لي -->
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-2xl p-5 border border-emerald-100 flex items-center justify-between shadow-sm">
                     <div>
-                        <p class="text-sm font-bold text-brand-600 mb-1">الديون المسددة</p>
-                        <h3 id="totalPaidDebts" class="text-3xl font-black text-brand-700">0</h3>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <p class="text-xs font-bold text-emerald-700">ديون لي (مستحق تحصيلها)</p>
+                        </div>
+                        <h3 id="totalRemainingToMe" class="text-2xl md:text-3xl font-black text-emerald-700">0</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            المحصّل: <span id="totalPaidToMe" class="font-bold text-emerald-600">0</span>
+                        </p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-500 text-xl">
-                        <i class="fa-solid fa-check-double"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
+                        <i class="fa-solid fa-arrow-down-left-and-up-right-to-center"></i>
+                    </div>
+                </div>
+
+                <!-- 3. صافي الموقف المالي -->
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50/50 rounded-2xl p-5 border border-indigo-100 flex items-center justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <p class="text-xs font-bold text-indigo-700">صافي الرصيد (ما لي - ما عليّ)</p>
+                        </div>
+                        <h3 id="netDebtBalance" class="text-2xl md:text-3xl font-black text-indigo-800">0</h3>
+                        <p class="text-[11px] font-bold mt-1" id="netDebtStatusBadge">
+                            <span class="text-slate-500">الموقف متوازن</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
+                        <i class="fa-solid fa-scale-balanced"></i>
                     </div>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-8 border border-slate-100">
-                <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة دين جديد
-                </h2>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-brand-500"></i> إضافة دين جديد
+                    </h2>
+                    <!-- Debt Type Switch -->
+                    <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="debtTypeRadio" value="on_me" checked class="peer hidden" onchange="onDebtTypeChange('on_me')">
+                            <span class="peer-checked:bg-red-500 peer-checked:text-white text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> دين عليّ (أنا مدين)
+                            </span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="debtTypeRadio" value="to_me" class="peer hidden" onchange="onDebtTypeChange('to_me')">
+                            <span class="peer-checked:bg-emerald-600 peer-checked:text-white text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrow-down-left-and-up-right-to-center text-[10px]"></i> دين لي (أنا دائن)
+                            </span>
+                        </label>
+                    </div>
+                </div>
                 <form id="debtForm" class="flex flex-col md:flex-row gap-3">
                     <div class="flex-grow">
-                        <input type="text" id="debtCreditor" placeholder="اسم الدائن أو الغرض" required
+                        <input type="text" id="debtCreditor" placeholder="اسم الدائن أو الغرض (مثال: متجر التقنية - قرض)" required
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700">
                     </div>
                     <div class="w-full md:w-52 flex-shrink-0">
@@ -647,7 +763,7 @@
                         <input type="date" id="debtDueDate" required
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-slate-50 focus:bg-white text-slate-700 text-right">
                     </div>
-                    <button type="submit"
+                    <button type="submit" id="debtSubmitBtn"
                         class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> إضافة
                     </button>
@@ -655,9 +771,23 @@
             </div>
 
             <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-list"></i> سجل الديون
-                </h3>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list"></i> سجل الديون
+                    </h3>
+                    <!-- Filter tabs -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl self-start sm:self-auto text-xs font-bold">
+                        <button type="button" onclick="setDebtTypeFilter('all')" id="debtFilterAll" class="px-3 py-1.5 rounded-lg transition-all bg-brand-500 text-white shadow-2xs">
+                            الكل (<span id="debtsFilterAllCount">0</span>)
+                        </button>
+                        <button type="button" onclick="setDebtTypeFilter('on_me')" id="debtFilterOnMe" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-800">
+                            ديون عليّ (<span id="debtsFilterOnMeCount">0</span>)
+                        </button>
+                        <button type="button" onclick="setDebtTypeFilter('to_me')" id="debtFilterToMe" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-800">
+                            ديون لي (<span id="debtsFilterToMeCount">0</span>)
+                        </button>
+                    </div>
+                </div>
                 <ul id="list-debts" class="space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
                 </ul>
             </div>
@@ -735,15 +865,38 @@
                         </div>
 
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button onclick="toggleTimelineViewMode()" id="timelineViewToggleBtn" class="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/10 shadow-xs">
+                            <!-- Manual Hand Zoom Control Bar (تكبير وتصغير باليد) -->
+                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 flex items-center gap-2 text-white text-xs shadow-xs" title="تحكم يدوي بحجم البطاقات باليد">
+                                <span class="flex items-center gap-1 text-emerald-300 font-bold">
+                                    <i class="fa-solid fa-hand text-amber-300"></i>
+                                    <span class="hidden sm:inline">حجم البطاقات:</span>
+                                </span>
+                                <button type="button" onclick="adjustTimelineCardWidth(-30)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تصغير باليد">
+                                    <i class="fa-solid fa-minus text-[10px]"></i>
+                                </button>
+                                <input type="range" id="timelineZoomSlider" min="240" max="480" step="10" value="320" oninput="setTimelineCardWidth(this.value)" class="w-16 sm:w-20 accent-emerald-400 cursor-pointer" title="اسحب باليد للتكبير والتصغير">
+                                <button type="button" onclick="adjustTimelineCardWidth(30)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors" title="تكبير باليد">
+                                    <i class="fa-solid fa-plus text-[10px]"></i>
+                                </button>
+                                <button type="button" onclick="resetTimelineCardWidth()" class="text-[10px] text-slate-300 hover:text-white px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors" title="إعادة الحجم الافتراضي">
+                                    100%
+                                </button>
+                            </div>
+
+                            <button onclick="toggleTimelineViewMode()" id="timelineViewToggleBtn" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10 shadow-xs">
                                 <i class="fa-solid fa-arrows-split-up-and-left"></i>
                                 <span id="timelineViewModeLabel">عرض رأسي</span>
                             </button>
-                            <button onclick="applyStarterTimelineTemplate()" class="px-3.5 py-2.5 bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-emerald-400/30 shadow-xs">
-                                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
-                                <span>روتين مقترح</span>
+                            <!-- Template Buttons -->
+                            <button onclick="openApplyTemplateModal()" class="px-3 py-2 bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-indigo-400/30 shadow-xs" title="اختر قالباً لوضع بطاقاته أينما تشاء">
+                                <i class="fa-solid fa-layer-group text-amber-300"></i>
+                                <span>القوالب الجاهزة</span>
                             </button>
-                            <button onclick="clearTimelinePrompt()" class="px-3 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-rose-400/20" title="تفريغ السهم">
+                            <button onclick="openSaveTimelineTemplateModal()" class="px-3 py-2 bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-emerald-400/30 shadow-xs" title="حفظ مسار اليوم الحالي كقالب جديد">
+                                <i class="fa-solid fa-floppy-disk text-emerald-300"></i>
+                                <span>حفظ كقالب</span>
+                            </button>
+                            <button onclick="clearTimelinePrompt()" class="px-2.5 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-rose-400/20" title="تفريغ السهم">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -1065,46 +1218,79 @@
 
         function renderFolderChips() {
             const container = document.getElementById('folderChipsContainer');
-            if (!container) return;
+            const tasksContainer = document.getElementById('tasksFolderChipsContainer');
             
             const folders = getAllFolders();
             const totalItems = tasks.length + trusts.length + debts.length;
             const generalCount = tasks.filter(t => !t.folder).length + trusts.filter(t => !t.folder).length + debts.filter(d => !d.folder).length;
+            
+            const totalTasks = tasks.length;
+            const generalTasks = tasks.filter(t => !t.folder).length;
 
-            let html = `
-                <div class="flex items-center gap-1.5 flex-shrink-0 text-xs font-bold text-slate-400 pl-1">
-                    <i class="fa-solid fa-folder-tree"></i> الملفات:
-                </div>
-                <button onclick="selectFolder('all')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${selectedFolder === 'all' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
-                    <i class="fa-solid fa-border-all text-[11px]"></i> الكل <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${totalItems}</span>
-                </button>
-            `;
-
-            if (generalCount > 0) {
-                html += `
-                    <button onclick="selectFolder('__general__')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 ${selectedFolder === '__general__' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
-                        <i class="fa-regular fa-file text-[11px]"></i> عام <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${generalCount}</span>
+            if (container) {
+                let html = `
+                    <div class="flex items-center gap-1.5 flex-shrink-0 text-xs font-bold text-slate-400 pl-1">
+                        <i class="fa-solid fa-folder-tree"></i> الملفات:
+                    </div>
+                    <button onclick="selectFolder('all')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${selectedFolder === 'all' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                        <i class="fa-solid fa-border-all text-[11px]"></i> الكل <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${totalItems}</span>
                     </button>
                 `;
+
+                if (generalCount > 0) {
+                    html += `
+                        <button onclick="selectFolder('__general__')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 ${selectedFolder === '__general__' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                            <i class="fa-regular fa-file text-[11px]"></i> عام <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${generalCount}</span>
+                        </button>
+                    `;
+                }
+
+                folders.forEach(f => {
+                    const count = tasks.filter(t => t.folder === f).length + trusts.filter(t => t.folder === f).length + debts.filter(d => d.folder === f).length;
+                    const isActive = selectedFolder === f;
+                    html += `
+                        <button onclick="selectFolder('${escapeHTML(f)}')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                            <i class="fa-solid fa-folder text-[11px] ${isActive ? 'text-white' : 'text-brand-500'}"></i> ${escapeHTML(f)} <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${count}</span>
+                        </button>
+                    `;
+                });
+
+                html += `
+                    <button onclick="showCreateFolderModal()" class="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold text-brand-600 hover:bg-brand-50 border border-dashed border-brand-300 transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i> ملف جديد
+                    </button>
+                `;
+
+                container.innerHTML = html;
             }
 
-            folders.forEach(f => {
-                const count = tasks.filter(t => t.folder === f).length + trusts.filter(t => t.folder === f).length + debts.filter(d => d.folder === f).length;
-                const isActive = selectedFolder === f;
-                html += `
-                    <button onclick="selectFolder('${escapeHTML(f)}')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
-                        <i class="fa-solid fa-folder text-[11px] ${isActive ? 'text-white' : 'text-brand-500'}"></i> ${escapeHTML(f)} <span class="text-[11px] opacity-80 bg-black/10 px-1.5 py-0.5 rounded-full">${count}</span>
+            if (tasksContainer) {
+                let tasksHtml = `
+                    <button onclick="selectFolder('all')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${selectedFolder === 'all' ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                        <i class="fa-solid fa-border-all text-[11px]"></i> عرض كل المهام <span class="text-[11px] ${selectedFolder === 'all' ? 'bg-white/20' : 'bg-slate-200'} px-1.5 py-0.5 rounded-full">${totalTasks}</span>
                     </button>
                 `;
-            });
 
-            html += `
-                <button onclick="showCreateFolderModal()" class="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold text-brand-600 hover:bg-brand-50 border border-dashed border-brand-300 transition-all flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-[10px]"></i> ملف جديد
-                </button>
-            `;
+                if (generalTasks > 0) {
+                    tasksHtml += `
+                        <button onclick="selectFolder('__general__')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${selectedFolder === '__general__' ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                            <i class="fa-regular fa-file text-[11px]"></i> عام (بدون ملف) <span class="text-[11px] ${selectedFolder === '__general__' ? 'bg-white/20' : 'bg-slate-200'} px-1.5 py-0.5 rounded-full">${generalTasks}</span>
+                        </button>
+                    `;
+                }
 
-            container.innerHTML = html;
+                folders.forEach(f => {
+                    const taskCount = tasks.filter(t => t.folder === f).length;
+                    const isActive = selectedFolder === f;
+                    tasksHtml += `
+                        <button onclick="selectFolder('${escapeHTML(f)}')" class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-brand-500 text-white shadow-sm ring-2 ring-brand-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                            <i class="fa-solid fa-folder text-[11px] ${isActive ? 'text-white' : 'text-brand-500'}"></i> ${escapeHTML(f)} <span class="text-[11px] ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 py-0.5 rounded-full">${taskCount}</span>
+                        </button>
+                    `;
+                });
+
+                tasksContainer.innerHTML = tasksHtml;
+            }
         }
 
         function renderFolders() {
@@ -1747,8 +1933,194 @@
             }
         }
 
-        // --- Tasks Logic ---
+        // --- Tasks Suggestions & Logic ---
+        const DEFAULT_TASK_SUGGESTIONS = [
+            { text: 'قراءة الورد القرآني وأذكار الصباح', category: 'ui' },
+            { text: 'جلسة عمل وتركيز عميق (Deep Work)', category: 'ui' },
+            { text: 'مراجعة المهام وتنظيم أولويات اليوم', category: 'in' },
+            { text: 'متابعة البريد والرسائل والمكالمات', category: 'un' },
+            { text: 'ممارسة رياضة المشي أو التمارين', category: 'in' },
+            { text: 'قراءة نافعة وتطوير المهارات', category: 'in' },
+            { text: 'سداد الفواتير والالتزامات المالية', category: 'ui' },
+            { text: 'اجتماع عمل وتنسيق المشاريع', category: 'un' },
+            { text: 'جلسة عائلية واستراحة واستجمام', category: 'nn' },
+            { text: 'شراء مستلزمات واحتياجات المنزل', category: 'un' }
+        ];
+
+        let currentSuggestionsList = [];
+
+        function getAvailableTaskSuggestions() {
+            const list = [];
+            const seen = new Set();
+
+            // 1. Existing tasks from current user
+            tasks.forEach(t => {
+                const cleanText = (t.text || '').trim();
+                if (cleanText && !seen.has(cleanText)) {
+                    seen.add(cleanText);
+                    list.push({
+                        text: cleanText,
+                        folder: t.folder || '',
+                        category: t.category || 'ui',
+                        isHistory: true
+                    });
+                }
+            });
+
+            // 2. Default presets
+            DEFAULT_TASK_SUGGESTIONS.forEach(p => {
+                if (!seen.has(p.text)) {
+                    seen.add(p.text);
+                    list.push({
+                        text: p.text,
+                        folder: '',
+                        category: p.category,
+                        isPreset: true
+                    });
+                }
+            });
+
+            return list;
+        }
+
+        function renderTaskSuggestions(query = '') {
+            const dropdown = document.getElementById('taskSuggestionsDropdown');
+            if (!dropdown) return;
+
+            const q = query.trim().toLowerCase();
+            const allSuggestions = getAvailableTaskSuggestions();
+            currentSuggestionsList = allSuggestions.filter(item => {
+                if (!q) return true;
+                return item.text.toLowerCase().includes(q) || (item.folder && item.folder.toLowerCase().includes(q));
+            });
+
+            if (currentSuggestionsList.length === 0) {
+                dropdown.innerHTML = `
+                    <div class="p-3 text-center text-xs text-slate-400">
+                        <i class="fa-solid fa-circle-info mb-1 block"></i>
+                        لا توجد مهمة سابقة مطابقة، اضغط إضافة لإنشاء "${escapeHTML(query)}"
+                    </div>
+                `;
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            const categoryLabels = {
+                ui: { text: 'مهم وعاجل', color: 'text-red-600 bg-red-50' },
+                in: { text: 'مهم وغير عاجل', color: 'text-blue-600 bg-blue-50' },
+                un: { text: 'غير مهم وعاجل', color: 'text-yellow-700 bg-yellow-50' },
+                nn: { text: 'غير مهم وغير عاجل', color: 'text-slate-600 bg-slate-100' }
+            };
+
+            let html = `
+                <div class="px-2.5 py-1.5 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold">
+                    <span><i class="fa-solid fa-list-check text-brand-500 mr-1"></i> اختر مهمة من القائمة (${currentSuggestionsList.length})</span>
+                    <button type="button" onclick="closeTaskSuggestionsDropdown()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="space-y-1 mt-1">
+            `;
+
+            currentSuggestionsList.slice(0, 15).forEach((item, idx) => {
+                const cat = categoryLabels[item.category] || categoryLabels.ui;
+                html += `
+                    <button type="button" onclick="selectTaskSuggestion(${idx})" 
+                        class="task-suggestion-item w-full text-right p-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 flex items-center justify-between gap-2 text-xs md:text-sm font-medium transition-all group">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-6 h-6 rounded-lg ${item.isHistory ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'} flex items-center justify-center text-[10px] flex-shrink-0 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid ${item.isHistory ? 'fa-clock-rotate-left' : 'fa-wand-magic-sparkles'}"></i>
+                            </span>
+                            <span class="truncate font-semibold text-slate-800">${escapeHTML(item.text)}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            ${item.folder ? `
+                                <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
+                                    <i class="fa-solid fa-folder text-[8px]"></i> ${escapeHTML(item.folder)}
+                                </span>
+                            ` : ''}
+                            <span class="text-[10px] px-2 py-0.5 rounded-md ${cat.color} font-bold">
+                                ${cat.text}
+                            </span>
+                        </div>
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+            dropdown.innerHTML = html;
+            dropdown.classList.remove('hidden');
+        }
+
+        function showTaskSuggestionsDropdown(query = '') {
+            renderTaskSuggestions(query);
+        }
+
+        function closeTaskSuggestionsDropdown() {
+            const dropdown = document.getElementById('taskSuggestionsDropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+        }
+
+        function toggleTaskSuggestionsDropdown(e) {
+            if (e) e.stopPropagation();
+            const dropdown = document.getElementById('taskSuggestionsDropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                closeTaskSuggestionsDropdown();
+            } else {
+                const taskInput = document.getElementById('taskInput');
+                showTaskSuggestionsDropdown(taskInput ? taskInput.value : '');
+            }
+        }
+
+        function selectTaskSuggestion(index) {
+            const item = currentSuggestionsList[index];
+            if (!item) return;
+
+            const taskInput = document.getElementById('taskInput');
+            const folderInput = document.getElementById('taskFolderInput');
+            const categorySelect = document.getElementById('categorySelect');
+
+            if (taskInput) taskInput.value = item.text;
+            if (folderInput && item.folder) folderInput.value = item.folder;
+            if (categorySelect && item.category) categorySelect.value = item.category;
+
+            closeTaskSuggestionsDropdown();
+            playSound('pop');
+            showNotification(`تم اختيار المهمة: "${item.text}"`);
+            if (taskInput) taskInput.focus();
+        }
+
+        function setupTaskSuggestions() {
+            const taskInput = document.getElementById('taskInput');
+            if (!taskInput) return;
+
+            taskInput.addEventListener('focus', () => {
+                showTaskSuggestionsDropdown(taskInput.value);
+            });
+
+            taskInput.addEventListener('click', () => {
+                showTaskSuggestionsDropdown(taskInput.value);
+            });
+
+            taskInput.addEventListener('input', () => {
+                showTaskSuggestionsDropdown(taskInput.value);
+            });
+
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('taskSuggestionsDropdown');
+                const toggleBtn = document.getElementById('taskSuggestionsToggleBtn');
+                if (dropdown && !dropdown.contains(e.target) && e.target !== taskInput && e.target !== toggleBtn && !toggleBtn?.contains(e.target)) {
+                    closeTaskSuggestionsDropdown();
+                }
+            });
+
+            taskInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeTaskSuggestionsDropdown();
+                }
+            });
+        }
+
         function setupForm() {
+            setupTaskSuggestions();
             const form = document.getElementById('taskForm');
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1763,6 +2135,7 @@
                 
                 if (text) {
                     await addTask(text, category, folder);
+                    closeTaskSuggestionsDropdown();
                     taskInput.value = '';
                     if (selectedFolder === 'all' || selectedFolder === '__general__') {
                         if (folderInput) folderInput.value = '';
@@ -2278,6 +2651,65 @@
         }
 
         // --- Debts Logic ---
+        let selectedDebtFilter = 'all'; // 'all' | 'on_me' | 'to_me'
+
+        function parseDebtRaw(rawCreditor) {
+            if (!rawCreditor) return { folder: '', text: '', type: 'on_me' };
+            let str = String(rawCreditor).trim();
+            let type = 'on_me';
+            if (str.includes('[نوع:لي]') || str.includes('[لي]') || str.startsWith('(لي)') || str.startsWith('لي:')) {
+                type = 'to_me';
+                str = str.replace(/\[نوع:لي\]/g, '').replace(/\[لي\]/g, '').replace(/^\(لي\)\s*/, '').replace(/^لي:\s*/, '').trim();
+            } else if (str.includes('[نوع:علي]') || str.includes('[علي]')) {
+                type = 'on_me';
+                str = str.replace(/\[نوع:علي\]/g, '').replace(/\[علي\]/g, '').trim();
+            }
+            const parsedFolder = parseFolderAndText(str);
+            return {
+                folder: parsedFolder.folder,
+                text: parsedFolder.text,
+                type: type
+            };
+        }
+
+        function formatDebtRaw(text, folder, type = 'on_me') {
+            const base = formatWithFolder(text, folder);
+            if (type === 'to_me') {
+                return `[لي] ${base}`;
+            }
+            return base;
+        }
+
+        function onDebtTypeChange(type) {
+            const creditorInput = document.getElementById('debtCreditor');
+            if (creditorInput) {
+                if (type === 'to_me') {
+                    creditorInput.placeholder = 'اسم المدين أو المستحق (مثال: عبدالله - سلفة شخصية)';
+                } else {
+                    creditorInput.placeholder = 'اسم الدائن أو الغرض (مثال: متجر التقنية - قرض)';
+                }
+            }
+        }
+
+        function setDebtTypeFilter(filter) {
+            selectedDebtFilter = filter;
+            const btnAll = document.getElementById('debtFilterAll');
+            const btnOnMe = document.getElementById('debtFilterOnMe');
+            const btnToMe = document.getElementById('debtFilterToMe');
+            
+            [btnAll, btnOnMe, btnToMe].forEach(b => {
+                if (b) {
+                    b.className = 'px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-800';
+                }
+            });
+
+            if (filter === 'all' && btnAll) btnAll.className = 'px-3 py-1.5 rounded-lg transition-all bg-brand-500 text-white shadow-2xs font-bold';
+            if (filter === 'on_me' && btnOnMe) btnOnMe.className = 'px-3 py-1.5 rounded-lg transition-all bg-red-500 text-white shadow-2xs font-bold';
+            if (filter === 'to_me' && btnToMe) btnToMe.className = 'px-3 py-1.5 rounded-lg transition-all bg-emerald-600 text-white shadow-2xs font-bold';
+
+            renderDebts();
+        }
+
         function setupDebtForm() {
             const form = document.getElementById('debtForm');
             if(!form) return;
@@ -2289,9 +2721,11 @@
                 const dueDate = document.getElementById('debtDueDate').value;
                 const folderInput = document.getElementById('debtFolderInput');
                 const folder = folderInput ? folderInput.value.trim() : '';
+                const typeRadio = document.querySelector('input[name="debtTypeRadio"]:checked');
+                const type = typeRadio ? typeRadio.value : 'on_me';
                 
                 if (creditor && !isNaN(amount) && dueDate) {
-                    await addDebt(creditor, amount, dueDate, folder);
+                    await addDebt(creditor, amount, dueDate, folder, type);
                     document.getElementById('debtCreditor').value = '';
                     document.getElementById('debtAmount').value = '';
                     document.getElementById('debtDueDate').value = '';
@@ -2303,20 +2737,21 @@
             });
         }
 
-        async function addDebt(creditor, amount, dueDate, folder = '') {
+        async function addDebt(creditor, amount, dueDate, folder = '', type = 'on_me') {
             if (!currentUser) return;
             const finalFolder = (folder || (selectedFolder !== 'all' && selectedFolder !== '__general__' ? selectedFolder : '')).replace(/[\[\]]/g, '').trim();
             if (finalFolder && !customFolders.includes(finalFolder)) {
                 customFolders.push(finalFolder);
                 saveCustomFolders();
             }
-            const formatted = formatWithFolder(creditor, finalFolder);
-            const parsed = parseFolderAndText(formatted);
+            const formatted = formatDebtRaw(creditor, finalFolder, type);
+            const parsed = parseDebtRaw(formatted);
             const newDebt = {
                 id: 'debt_' + Date.now().toString(),
                 rawCreditor: formatted,
                 creditor_name: parsed.text,
                 folder: parsed.folder,
+                type: parsed.type,
                 amount: amount,
                 due_date: dueDate,
                 completed: false,
@@ -2329,7 +2764,7 @@
             renderFolders();
             updateFolderDatalist();
             updateActiveFolderUI();
-            showNotification('تم إضافة الدين بنجاح');
+            showNotification(type === 'to_me' ? 'تم إضافة الدين (مستحق لك)' : 'تم إضافة الدين (التزام عليك)');
             
             await supabaseClient.from('debts').insert([{
                 id: newDebt.id,
@@ -2368,13 +2803,14 @@
             const { data, error } = await supabaseClient.from('debts').select('*').eq('user_id', currentUser.id);
             if (data && !error) {
                 debts = data.map(d => {
-                    const parsed = parseFolderAndText(d.creditor_name);
+                    const parsed = parseDebtRaw(d.creditor_name);
                     return {
                         id: d.id,
                         rawCreditor: d.creditor_name,
                         creditor_name: parsed.text,
                         folder: parsed.folder,
-                        amount: parseFloat(d.amount),
+                        type: parsed.type,
+                        amount: parseFloat(d.amount) || 0,
                         due_date: d.due_date,
                         completed: d.completed,
                         createdAt: d.created_at
@@ -2395,13 +2831,82 @@
             if(!list) return;
             list.innerHTML = '';
             
-            let totalRemaining = 0;
-            let totalPaid = 0;
+            let onMeRemaining = 0;
+            let onMePaid = 0;
+            let toMeRemaining = 0;
+            let toMePaid = 0;
 
-            const filteredDebts = debts.filter(d => {
+            const filteredByFolder = debts.filter(d => {
                 if (selectedFolder === 'all') return true;
                 if (selectedFolder === '__general__') return !d.folder;
                 return d.folder === selectedFolder;
+            });
+
+            // Calculate stats for current folder
+            filteredByFolder.forEach(d => {
+                const isToMe = (d.type === 'to_me');
+                const amt = Number(d.amount) || 0;
+                if (isToMe) {
+                    if (d.completed) toMePaid += amt;
+                    else toMeRemaining += amt;
+                } else {
+                    if (d.completed) onMePaid += amt;
+                    else onMeRemaining += amt;
+                }
+            });
+
+            // Update stats elements
+            const onMeRemEl = document.getElementById('totalRemainingOnMe');
+            const onMePaidEl = document.getElementById('totalPaidOnMe');
+            const toMeRemEl = document.getElementById('totalRemainingToMe');
+            const toMePaidEl = document.getElementById('totalPaidToMe');
+            const netBalanceEl = document.getElementById('netDebtBalance');
+            const netStatusEl = document.getElementById('netDebtStatusBadge');
+
+            if (onMeRemEl) onMeRemEl.textContent = onMeRemaining.toLocaleString('en-US');
+            if (onMePaidEl) onMePaidEl.textContent = onMePaid.toLocaleString('en-US');
+            if (toMeRemEl) toMeRemEl.textContent = toMeRemaining.toLocaleString('en-US');
+            if (toMePaidEl) toMePaidEl.textContent = toMePaid.toLocaleString('en-US');
+
+            const netBalance = toMeRemaining - onMeRemaining;
+            if (netBalanceEl) {
+                const prefix = netBalance > 0 ? '+' : '';
+                netBalanceEl.textContent = prefix + netBalance.toLocaleString('en-US');
+                if (netBalance > 0) {
+                    netBalanceEl.className = 'text-2xl md:text-3xl font-black text-emerald-600';
+                } else if (netBalance < 0) {
+                    netBalanceEl.className = 'text-2xl md:text-3xl font-black text-red-600';
+                } else {
+                    netBalanceEl.className = 'text-2xl md:text-3xl font-black text-indigo-800';
+                }
+            }
+
+            if (netStatusEl) {
+                if (netBalance > 0) {
+                    netStatusEl.innerHTML = `<span class="text-emerald-600 font-black"><i class="fa-solid fa-arrow-trend-up"></i> فائض لصالحك (+${netBalance.toLocaleString('en-US')})</span>`;
+                } else if (netBalance < 0) {
+                    netStatusEl.innerHTML = `<span class="text-red-600 font-black"><i class="fa-solid fa-arrow-trend-down"></i> التزام مطلوب سداده (${Math.abs(netBalance).toLocaleString('en-US')})</span>`;
+                } else {
+                    netStatusEl.innerHTML = `<span class="text-slate-500 font-bold">الموقف المالي متوازن</span>`;
+                }
+            }
+
+            // Update filter badges
+            const countAll = filteredByFolder.length;
+            const countOnMe = filteredByFolder.filter(d => (d.type || 'on_me') === 'on_me').length;
+            const countToMe = filteredByFolder.filter(d => d.type === 'to_me').length;
+            const fAllCountEl = document.getElementById('debtsFilterAllCount');
+            const fOnMeCountEl = document.getElementById('debtsFilterOnMeCount');
+            const fToMeCountEl = document.getElementById('debtsFilterToMeCount');
+            if (fAllCountEl) fAllCountEl.textContent = countAll;
+            if (fOnMeCountEl) fOnMeCountEl.textContent = countOnMe;
+            if (fToMeCountEl) fToMeCountEl.textContent = countToMe;
+
+            // Apply type filter
+            const filteredDebts = filteredByFolder.filter(d => {
+                if (selectedDebtFilter === 'on_me') return (d.type || 'on_me') === 'on_me';
+                if (selectedDebtFilter === 'to_me') return d.type === 'to_me';
+                return true;
             });
 
             const sorted = [...filteredDebts].sort((a, b) => {
@@ -2412,11 +2917,9 @@
             });
 
             sorted.forEach(debt => {
-                if(debt.completed) totalPaid += debt.amount;
-                else totalRemaining += debt.amount;
-
+                const isToMe = (debt.type === 'to_me');
                 const li = document.createElement('li');
-                li.className = `task-card bg-white border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${debt.completed ? 'task-completed opacity-75' : ''}`;
+                li.className = `task-card bg-white border ${isToMe ? 'border-emerald-200 hover:border-emerald-300' : 'border-red-100 hover:border-red-200'} rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${debt.completed ? 'task-completed opacity-75' : ''}`;
                 
                 const isOverdue = !debt.completed && new Date(debt.due_date) < new Date(new Date().setHours(0,0,0,0));
                 const dateColor = debt.completed ? 'text-slate-400' : (isOverdue ? 'text-red-500 font-bold' : 'text-blue-500');
@@ -2430,35 +2933,44 @@
                                id="check-${debt.id}">
                         <div class="flex flex-col flex-grow min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-black rounded-lg ${isToMe ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'} shadow-2xs">
+                                    <i class="fa-solid ${isToMe ? 'fa-arrow-down-left-and-up-right-to-center' : 'fa-arrow-up-right-from-square'} text-[9px]"></i>
+                                    ${isToMe ? 'دين لي (أطلبه)' : 'دين عليّ (أنا مدين)'}
+                                </span>
                                 <label for="check-${debt.id}" class="task-text text-sm md:text-base font-bold break-words cursor-pointer select-none ${debt.completed ? 'text-slate-500' : 'text-slate-800'}">
-                                    الدائن: ${escapeHTML(debt.creditor_name)}
+                                    ${isToMe ? 'المدين' : 'الدائن'}: ${escapeHTML(debt.creditor_name)}
                                 </label>
                                 ${debt.folder ? `
                                 <span onclick="selectFolder('${escapeHTML(debt.folder)}')" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer transition-colors shadow-2xs" title="تصفية حسب هذا الملف">
                                     <i class="fa-solid fa-folder text-[9px]"></i> ${escapeHTML(debt.folder)}
                                 </span>
                                 ` : ''}
-                            </div>
-                            <div class="flex items-center gap-4 mt-1 text-sm">
-                                <span class="font-bold ${debt.completed ? 'text-slate-400' : 'text-brand-600'}">
-                                    <i class="fa-solid fa-coins mr-1"></i> ${debt.amount.toLocaleString('en-US')}
+                                ${debt.completed ? `
+                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isToMe ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">
+                                    <i class="fa-solid fa-check text-[9px]"></i> ${isToMe ? 'محصّل بالكامل' : 'مسدد بالكامل'}
                                 </span>
-                                <span class="${dateColor}">
-                                    <i class="fa-regular fa-calendar mr-1"></i> ${debt.due_date}
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center gap-4 mt-1.5 text-sm flex-wrap">
+                                <span class="font-extrabold ${debt.completed ? 'text-slate-400' : (isToMe ? 'text-emerald-600' : 'text-red-600')}">
+                                    <i class="fa-solid fa-coins mr-1"></i> ${(debt.amount || 0).toLocaleString('en-US')}
+                                </span>
+                                <span class="${dateColor} text-xs">
+                                    <i class="fa-regular fa-calendar mr-1"></i> استحقاق: ${debt.due_date}
                                 </span>
                             </div>
                         </div>
                     </div>
                     <div class="flex gap-1 flex-shrink-0 self-end md:self-center">
                         <button onclick="editDebt('${debt.id}')" 
-                                class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                                class="text-slate-400 hover:text-blue-500 p-2 rounded-xl hover:bg-blue-50 transition-colors"
                                 title="تعديل بيانات الدين">
-                            <i class="fa-solid fa-pen"></i>
+                            <i class="fa-solid fa-pen text-xs"></i>
                         </button>
                         <button onclick="deleteDebt('${debt.id}')" 
-                                class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                class="text-slate-400 hover:text-red-500 p-2 rounded-xl hover:bg-red-50 transition-colors"
                                 title="حذف الدين">
-                            <i class="fa-solid fa-xmark"></i>
+                            <i class="fa-solid fa-xmark text-sm"></i>
                         </button>
                     </div>
                 `;
@@ -2466,13 +2978,13 @@
             });
 
             if (filteredDebts.length === 0) {
-                list.innerHTML = '<li class="text-center text-slate-400 text-sm py-8 border-2 border-dashed border-slate-100 rounded-xl">لا توجد ديون مسجلة حالياً</li>';
+                list.innerHTML = `
+                    <li class="text-center text-slate-400 text-sm py-10 border-2 border-dashed border-slate-100 rounded-2xl">
+                        <i class="fa-solid fa-receipt text-2xl mb-2 text-slate-300 block"></i>
+                        لا توجد ديون مسجلة في هذا القسم حالياً
+                    </li>
+                `;
             }
-
-            const totalRemainingEl = document.getElementById('totalRemainingDebts');
-            const totalPaidEl = document.getElementById('totalPaidDebts');
-            if(totalRemainingEl) totalRemainingEl.textContent = totalRemaining.toLocaleString('en-US');
-            if(totalPaidEl) totalPaidEl.textContent = totalPaid.toLocaleString('en-US');
         }
 
         // --- Edit Modals ---
@@ -2528,12 +3040,14 @@
                 text: debt.creditor_name,
                 folder: debt.folder,
                 isDebt: true,
+                debtType: debt.type || 'on_me',
                 amount: debt.amount,
                 dueDate: debt.due_date,
-                onSave: async ({ text, folder, amount, dueDate }) => {
+                onSave: async ({ text, folder, amount, dueDate, debtType }) => {
                     debt.creditor_name = text;
                     debt.folder = folder;
-                    debt.rawCreditor = formatWithFolder(text, folder);
+                    debt.type = debtType || 'on_me';
+                    debt.rawCreditor = formatDebtRaw(text, folder, debt.type);
                     debt.amount = amount;
                     debt.due_date = dueDate;
                     renderDebts();
@@ -2551,7 +3065,7 @@
             });
         }
 
-        function showEditItemModal({ title = 'تعديل', text = '', folder = '', isDebt = false, amount = 0, dueDate = '', onSave }) {
+        function showEditItemModal({ title = 'تعديل', text = '', folder = '', isDebt = false, debtType = 'on_me', amount = 0, dueDate = '', onSave }) {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0';
             
@@ -2562,8 +3076,27 @@
                             <i class="fa-solid fa-pen-to-square text-brand-500"></i> ${title}
                         </h3>
                         <div class="space-y-4 mb-6">
+                            ${isDebt ? `
                             <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">${isDebt ? 'اسم الدائن أو الغرض' : 'النص / الوصف'}</label>
+                                <label class="block text-xs font-bold text-slate-600 mb-1.5">نوع الدين</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="editModalDebtType" value="on_me" ${debtType === 'on_me' ? 'checked' : ''} class="peer hidden">
+                                        <div class="peer-checked:bg-red-500 peer-checked:text-white border border-slate-200 bg-slate-50 p-2.5 text-center rounded-xl text-xs font-bold transition-all">
+                                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> دين عليّ (أنا مدين)
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="editModalDebtType" value="to_me" ${debtType === 'to_me' ? 'checked' : ''} class="peer hidden">
+                                        <div class="peer-checked:bg-emerald-600 peer-checked:text-white border border-slate-200 bg-slate-50 p-2.5 text-center rounded-xl text-xs font-bold transition-all">
+                                            <i class="fa-solid fa-arrow-down-left-and-up-right-to-center mr-1"></i> دين لي (أنا دائن)
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            ` : ''}
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">${isDebt ? 'اسم الطرف الآخر (الدائن أو المدين)' : 'النص / الوصف'}</label>
                                 <input type="text" id="editModalText" value="${escapeHTML(text)}" 
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all text-slate-700">
                             </div>
@@ -2623,9 +3156,12 @@
                 
                 let newAmount = amount;
                 let newDueDate = dueDate;
+                let newDebtType = debtType;
                 if (isDebt) {
                     newAmount = parseFloat(modal.querySelector('#editModalAmount').value) || 0;
                     newDueDate = modal.querySelector('#editModalDueDate').value;
+                    const typeRadio = modal.querySelector('input[name="editModalDebtType"]:checked');
+                    if (typeRadio) newDebtType = typeRadio.value;
                 }
                 
                 if (newFolder && !customFolders.includes(newFolder)) {
@@ -2635,7 +3171,7 @@
                 
                 closeModal();
                 try {
-                    onSave({ text: newText, folder: newFolder, amount: newAmount, dueDate: newDueDate });
+                    onSave({ text: newText, folder: newFolder, amount: newAmount, dueDate: newDueDate, debtType: newDebtType });
                 } catch(err) {
                     console.error('Error onSave edit item:', err);
                 }
@@ -2825,6 +3361,8 @@
 
         function setupTimeline() {
             startTimelineClock();
+            setupTimelineHandZoom();
+            loadTimelineTemplates();
             
             // Load view mode preference
             const savedMode = localStorage.getItem('timeline_view_mode');
@@ -3163,7 +3701,7 @@
                 // Segment Card
                 html += `
                     <div class="timeline-segment-wrapper" data-id="${item.id}">
-                        <div class="timeline-card p-4.5 md:p-5 ${cat.borderClass} ${isCompleted ? 'is-completed' : ''} h-full flex flex-col justify-between">
+                        <div class="timeline-card p-4.5 md:p-5 ${cat.borderClass} ${isCompleted ? 'is-completed' : ''} h-full flex flex-col justify-between relative">
                             <!-- Top Card Header -->
                             <div>
                                 <div class="flex items-center justify-between mb-3 gap-2">
@@ -3191,22 +3729,22 @@
                                     </div>
                                 </div>
 
-                                <!-- Time Pill -->
-                                <div class="mb-2.5">
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-lg">
+                                <!-- Time Pill (Centered) -->
+                                <div class="mb-3 flex justify-center">
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200/80 px-3 py-1 rounded-lg shadow-2xs">
                                         <i class="fa-regular fa-clock text-emerald-600 text-xs"></i>
                                         <span dir="rtl">${escapeHTML(item.timeRange)}</span>
                                     </span>
                                 </div>
 
-                                <!-- Title -->
-                                <h4 class="text-base md:text-lg font-black text-slate-800 timeline-title mb-1.5 leading-snug">
+                                <!-- Title (Centered) -->
+                                <h4 class="text-base md:text-lg font-black text-slate-800 timeline-title mb-2 leading-snug text-center px-1">
                                     ${escapeHTML(item.title)}
                                 </h4>
 
-                                <!-- Notes -->
+                                <!-- Notes (Centered) -->
                                 ${item.notes ? `
-                                    <p class="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2" title="${escapeHTML(item.notes)}">
+                                    <p class="text-xs text-slate-500 leading-relaxed mb-3 text-center px-2 line-clamp-3" title="${escapeHTML(item.notes)}">
                                         ${escapeHTML(item.notes)}
                                     </p>
                                 ` : '<div class="mb-2"></div>'}
@@ -3227,6 +3765,11 @@
                                         <i class="fa-solid fa-chevron-left"></i>
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Manual Resize Handle (باليد فقط) -->
+                            <div class="timeline-card-resize-handle" onmousedown="startTimelineCardResize(event)" ontouchstart="startTimelineCardResize(event)" title="اسحب باليد لتكبير أو تصغير البطاقات">
+                                <i class="fa-solid fa-up-right-and-down-left-from-center text-[9px]"></i>
                             </div>
                         </div>
                     </div>
@@ -3751,6 +4294,526 @@
                 titleInput.value = task;
                 titleInput.focus();
             }
+        }
+
+        // ==========================================
+        // --- التحكم بحجم بطاقات السهم باليد (Hand Zoom Engine) ---
+        // ==========================================
+        let timelineCardWidth = 320;
+
+        function setTimelineCardWidth(val) {
+            const width = Math.min(520, Math.max(220, parseInt(val, 10) || 320));
+            timelineCardWidth = width;
+            document.documentElement.style.setProperty('--timeline-card-width', `${width}px`);
+            const slider = document.getElementById('timelineZoomSlider');
+            if (slider && parseInt(slider.value, 10) !== width) {
+                slider.value = width;
+            }
+            try {
+                localStorage.setItem('timeline_card_width', String(width));
+            } catch (e) {}
+        }
+
+        function adjustTimelineCardWidth(delta) {
+            setTimelineCardWidth(timelineCardWidth + delta);
+        }
+
+        function resetTimelineCardWidth() {
+            setTimelineCardWidth(320);
+            showNotification('تمت استعادة حجم البطاقات الافتراضي');
+        }
+
+        // Drag handle resizing by mouse / touch on card corner (باليد فقط)
+        function startTimelineCardResize(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isTouch = e.type === 'touchstart';
+            const startX = isTouch ? e.touches[0].clientX : e.clientX;
+            const initialWidth = timelineCardWidth;
+
+            const onMove = (moveEvt) => {
+                const currentX = isTouch ? moveEvt.touches[0].clientX : moveEvt.clientX;
+                // In RTL layout, expanding to the left increases card width
+                const diff = startX - currentX;
+                setTimelineCardWidth(initialWidth + diff);
+            };
+
+            const onEnd = () => {
+                if (isTouch) {
+                    window.removeEventListener('touchmove', onMove);
+                    window.removeEventListener('touchend', onEnd);
+                } else {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onEnd);
+                }
+            };
+
+            if (isTouch) {
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('touchend', onEnd);
+            } else {
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onEnd);
+            }
+        }
+
+        // Pinch-to-zoom on touch devices (باليد بلمس الشاشة)
+        function setupTimelineHandZoom() {
+            try {
+                const saved = localStorage.getItem('timeline_card_width');
+                if (saved) {
+                    setTimelineCardWidth(parseInt(saved, 10));
+                }
+            } catch(e) {}
+
+            const track = document.getElementById('timelineHorizontalContainer');
+            if (!track) return;
+
+            let initialPinchDistance = null;
+            let initialPinchWidth = timelineCardWidth;
+
+            track.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    initialPinchDistance = Math.hypot(dx, dy);
+                    initialPinchWidth = timelineCardWidth;
+                }
+            }, { passive: true });
+
+            track.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches.length === 2 && initialPinchDistance) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.hypot(dx, dy);
+                    const scale = dist / initialPinchDistance;
+                    const newWidth = Math.round(initialPinchWidth * scale);
+                    setTimelineCardWidth(newWidth);
+                }
+            }, { passive: true });
+
+            track.addEventListener('touchend', (e) => {
+                if (!e.touches || e.touches.length < 2) {
+                    initialPinchDistance = null;
+                }
+            }, { passive: true });
+        }
+
+        // ==========================================
+        // --- محرك قوالب مسار اليوم (Day Timeline Templates Engine) ---
+        // ==========================================
+        let timelineTemplates = [];
+
+        const DEFAULT_TIMELINE_TEMPLATES = [
+            {
+                id: 'tpl_default_routine',
+                name: 'الروتين اليومي المتوازن (الفجر إلى النوم)',
+                description: 'الجدول الشامل المتوازن للروحانيات، والعمل العميق، والراحة، والرياضة',
+                isDefault: true,
+                items: [
+                    { timeRange: 'من الفجر إلى الساعة 8:00', title: 'مراجعة قرآن وأذكار الصباح', notes: 'تثبيت الورد القرآني وقراءة أذكار الصباح في هدوء وسكينة', category: 'spirituality' },
+                    { timeRange: '8:00 ص إلى 12:00 م', title: 'جلسة عمل عميق وتركيز عالي', notes: 'إنجاز أهم المهام والمشاريع دون مقاطعات', category: 'work' },
+                    { timeRange: '12:00 م إلى 2:00 م', title: 'صلاة الظهر وغداء وقيلولة', notes: 'تأدية الصلاة وتناول وجبة صحية واستراحة لتجديد النشاط', category: 'leisure' },
+                    { timeRange: '2:00 م إلى 5:00 م', title: 'إنجاز المهام ومتابعة المشاريع', notes: 'متابعة الاتصالات والمراسلات والمشاريع التطويرية', category: 'work' },
+                    { timeRange: '5:00 م إلى 7:30 م', title: 'رياضة ومشي وقراءة', notes: 'تمارين رياضية ومشي في الهواء الطلق وقراءة نافعة', category: 'health' },
+                    { timeRange: 'بعد العشاء إلى النوم', title: 'جلسة عائلية واستعداد للنوم', notes: 'وقت هادئ مع العائلة وأذكار النوم استعداداً ليوم باكر ومثمر', category: 'leisure' }
+                ]
+            },
+            {
+                id: 'tpl_focus_work',
+                name: 'يوم العمل المكثف والإنتاجية',
+                description: 'مخصص لأيام الضغط والمشاريع الكبرى والتسليمات العاجلة',
+                isDefault: true,
+                items: [
+                    { timeRange: '6:00 ص - 7:30 ص', title: 'تخطيط اليوم وتصفية البريد', notes: 'فرز الأولويات وترتيب قائمة الإنجاز', category: 'work' },
+                    { timeRange: '8:00 ص - 12:00 م', title: 'بلوك عمل عميق 1 (تركيز مطلق)', notes: 'إنجاز المهمة الأكبر بدون أي تشتيت أو هاتف', category: 'work' },
+                    { timeRange: '12:00 م - 1:00 م', title: 'صلاة واستراحة قصيرة', notes: 'استراحة وتجديد طاقة', category: 'leisure' },
+                    { timeRange: '1:00 م - 4:00 م', title: 'بلوك عمل عميق 2 (متابعة وإغلاق)', notes: 'إنهاء التسليمات والتواصل مع الفريق', category: 'work' },
+                    { timeRange: '4:30 م - 6:00 م', title: 'مراجعة الإنجاز والتخطيط للغد', notes: 'تقييم ما تم إنجازه وجرد المهام المتبقية', category: 'work' }
+                ]
+            },
+            {
+                id: 'tpl_weekend_recharge',
+                name: 'يوم العطلة وتجديد الطاقة',
+                description: 'مخصص للراحة والعبادة والعائلة واستعادة الحيوية',
+                isDefault: true,
+                items: [
+                    { timeRange: 'الفجر - 8:30 ص', title: 'عبادة وقراءة هادئة', notes: 'أذكار وتدبر وقراءة كتاب ممتع', category: 'spirituality' },
+                    { timeRange: '9:00 ص - 12:00 م', title: 'فطور ونشاط عائلي', notes: 'وقت ممتع ومشاركة مع العائلة', category: 'leisure' },
+                    { timeRange: '1:00 م - 4:00 م', title: 'استرخاء وقيلولة', notes: 'راحة تامة لاستعادة النشاط الذهني والبدني', category: 'leisure' },
+                    { timeRange: '4:30 م - 7:30 م', title: 'نزهة أو رياضة خارجية', notes: 'تغيير جو ومشي في الطبيعة', category: 'health' },
+                    { timeRange: 'المساء', title: 'زيارة وصلة رحم أو مطالعة', notes: 'تواصل دافئ وراحة', category: 'general' }
+                ]
+            }
+        ];
+
+        function loadTimelineTemplates() {
+            try {
+                const key = `timeline_templates_${currentUser ? currentUser.id : 'guest'}`;
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                    const custom = JSON.parse(stored);
+                    timelineTemplates = [...DEFAULT_TIMELINE_TEMPLATES, ...custom];
+                } else {
+                    timelineTemplates = [...DEFAULT_TIMELINE_TEMPLATES];
+                }
+            } catch (e) {
+                console.error('Error loading timeline templates:', e);
+                timelineTemplates = [...DEFAULT_TIMELINE_TEMPLATES];
+            }
+        }
+
+        function saveTimelineTemplates() {
+            try {
+                const key = `timeline_templates_${currentUser ? currentUser.id : 'guest'}`;
+                const customOnly = timelineTemplates.filter(t => !t.isDefault);
+                localStorage.setItem(key, JSON.stringify(customOnly));
+            } catch (e) {
+                console.error('Error saving timeline templates:', e);
+            }
+        }
+
+        function openSaveTimelineTemplateModal() {
+            if (!timelineItems || timelineItems.length === 0) {
+                showNotification('لا يمكن حفظ قالب فارغ! أضف محطات أولاً.', true);
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0';
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content border border-slate-100">
+                    <div class="p-6 md:p-7">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800">حفظ مسار اليوم كقالب</h3>
+                                    <p class="text-xs text-emerald-600 font-semibold">سيتم حفظ (${timelineItems.length}) محطة في هذا القالب</p>
+                                </div>
+                            </div>
+                            <button id="closeSaveTemplateX" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+
+                        <form id="saveTemplateForm" class="space-y-4">
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="templateNameInput">
+                                    اسم القالب <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" id="templateNameInput" required placeholder="مثلاً: روتين أيام الدوام، خطة الإجازة، روتين الاختبارات"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all font-medium">
+                            </div>
+
+                            <div>
+                                <label class="block text-slate-700 text-xs font-extrabold mb-1.5" for="templateDescInput">
+                                    وصف توضيحي (اختياري)
+                                </label>
+                                <textarea id="templateDescInput" rows="2" placeholder="ملاحظات حول متى يستخدم هذا القالب..."
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white text-slate-700 text-sm transition-all"></textarea>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                <span class="text-xs font-bold text-slate-600 block mb-2">معاينة المحطات المحفوظة:</span>
+                                <div class="max-h-36 overflow-y-auto space-y-1.5 text-xs text-slate-600 custom-scrollbar pr-1">
+                                    ${timelineItems.map((it, idx) => `
+                                        <div class="flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-100">
+                                            <span class="w-5 h-5 rounded-md bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0">#${idx+1}</span>
+                                            <span class="font-bold text-slate-700 truncate">${escapeHTML(it.title)}</span>
+                                            <span class="text-[10px] text-slate-400 mr-auto flex-shrink-0" dir="rtl">${escapeHTML(it.timeRange)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="button" id="cancelSaveTemplateBtn" class="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors">
+                                    إلغاء
+                                </button>
+                                <button type="submit" class="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-check"></i> حفظ القالب
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const content = modal.querySelector('.m-modal-content');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('#templateNameInput').focus();
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            modal.querySelector('#closeSaveTemplateX').onclick = closeModal;
+            modal.querySelector('#cancelSaveTemplateBtn').onclick = closeModal;
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+            modal.querySelector('#saveTemplateForm').onsubmit = (e) => {
+                e.preventDefault();
+                const name = modal.querySelector('#templateNameInput').value.trim();
+                const desc = modal.querySelector('#templateDescInput').value.trim();
+                if (!name) return;
+
+                const newTemplate = {
+                    id: 'tpl_custom_' + Date.now(),
+                    name,
+                    description: desc,
+                    isDefault: false,
+                    items: timelineItems.map(it => ({
+                        timeRange: it.timeRange,
+                        title: it.title,
+                        notes: it.notes || '',
+                        category: it.category || 'general'
+                    }))
+                };
+
+                timelineTemplates.push(newTemplate);
+                saveTimelineTemplates();
+                closeModal();
+                playSound('complete');
+                showNotification(`تم حفظ القالب "${name}" بنجاح!`);
+            };
+        }
+
+        // Apply a template into the timeline at ANY position the user chooses
+        function openApplyTemplateModal(defaultInsertIndex = null) {
+            loadTimelineTemplates();
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0';
+            
+            // Build station placement options
+            const currentItemOptions = timelineItems.map((it, idx) => 
+                `<option value="${idx}">قبل محطة #${idx + 1}: ${escapeHTML(it.title)}</option>`
+            ).join('');
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all scale-95 opacity-0 m-modal-content border border-slate-100 flex flex-col max-h-[90vh]">
+                    <div class="p-6 md:p-7 border-b border-slate-100 flex-shrink-0">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800">اختيار وتطبيق قالب مسار اليوم</h3>
+                                    <p class="text-xs text-indigo-600 font-semibold">اختر القالب وحدد موضع وضع البطاقات بالضبط أينما تشاء</p>
+                                </div>
+                            </div>
+                            <button id="closeApplyTemplateX" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 md:p-7 overflow-y-auto custom-scrollbar space-y-6 flex-grow">
+                        <!-- Step 1: Choose Template -->
+                        <div>
+                            <label class="block text-slate-800 text-xs font-black mb-2 flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px]">1</span>
+                                اختر القالب المناسب:
+                            </label>
+                            <div class="space-y-2.5" id="templateListRadioContainer">
+                                ${timelineTemplates.map((tpl, i) => `
+                                    <label class="block p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${i === 0 ? 'border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-200' : 'border-slate-200 hover:border-slate-300 bg-white'} relative template-radio-card" data-tid="${tpl.id}">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex items-start gap-2.5">
+                                                <input type="radio" name="selectedTemplateRadio" value="${tpl.id}" ${i === 0 ? 'checked' : ''} class="mt-1 accent-indigo-600" onchange="onTemplateRadioSelected('${tpl.id}')">
+                                                <div>
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <h4 class="text-sm font-black text-slate-800">${escapeHTML(tpl.name)}</h4>
+                                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${tpl.isDefault ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+                                                            ${tpl.isDefault ? 'نموذج أساسي' : 'قالبك المخصص'}
+                                                        </span>
+                                                        <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md">
+                                                            ${tpl.items.length} محطات
+                                                        </span>
+                                                    </div>
+                                                    ${tpl.description ? `<p class="text-xs text-slate-500 mt-1">${escapeHTML(tpl.description)}</p>` : ''}
+                                                    <!-- Mini Stations Preview -->
+                                                    <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                        ${tpl.items.slice(0, 4).map(it => `
+                                                            <span class="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-600 font-medium">
+                                                                ${escapeHTML(it.title)}
+                                                            </span>
+                                                        `).join('')}
+                                                        ${tpl.items.length > 4 ? `<span class="text-[10px] text-slate-400">+${tpl.items.length - 4} أخرى</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            ${!tpl.isDefault ? `
+                                                <button type="button" onclick="event.stopPropagation(); deleteCustomTemplate('${tpl.id}')" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors flex-shrink-0" title="حذف هذا القالب المخصص">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Choose Placement -->
+                        <div>
+                            <label class="block text-slate-800 text-xs font-black mb-2 flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px]">2</span>
+                                أين تود وضع بطاقات هذا القالب؟
+                            </label>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+                                <label class="p-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white cursor-pointer transition-all flex items-center gap-3 placement-option">
+                                    <input type="radio" name="templatePlacementMode" value="replace" ${timelineItems.length === 0 ? 'checked' : ''} class="accent-emerald-600" onchange="toggleCustomPlacementDropdown(false)">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">استبدال السهم بالكامل</span>
+                                        <span class="block text-[10px] text-slate-400">تفريغ المحطات الحالية ووضع القالب كبداية جديدة</span>
+                                    </div>
+                                </label>
+
+                                <label class="p-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white cursor-pointer transition-all flex items-center gap-3 placement-option">
+                                    <input type="radio" name="templatePlacementMode" value="end" ${timelineItems.length > 0 ? 'checked' : ''} class="accent-emerald-600" onchange="toggleCustomPlacementDropdown(false)">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">إضافة في نهاية السهم</span>
+                                        <span class="block text-[10px] text-slate-400">إلحاق بطاقات القالب بعد محطات اليوم الحالية</span>
+                                    </div>
+                                </label>
+
+                                <label class="p-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white cursor-pointer transition-all flex items-center gap-3 placement-option">
+                                    <input type="radio" name="templatePlacementMode" value="start" class="accent-emerald-600" onchange="toggleCustomPlacementDropdown(false)">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">إضافة في بداية اليوم</span>
+                                        <span class="block text-[10px] text-slate-400">وضع بطاقات القالب قبل جميع المحطات الحالية</span>
+                                    </div>
+                                </label>
+
+                                <label class="p-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white cursor-pointer transition-all flex items-center gap-3 placement-option">
+                                    <input type="radio" name="templatePlacementMode" value="custom" class="accent-emerald-600" onchange="toggleCustomPlacementDropdown(true)">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">في موضع محدد بين المحطات</span>
+                                        <span class="block text-[10px] text-slate-400">اختيار رقم المحطة التي تريد إدراج القالب عندها</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div id="customPlacementContainer" class="hidden p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="customPlacementSelect">
+                                    حدد موضع الإدراج بين المحطات:
+                                </label>
+                                <select id="customPlacementSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white">
+                                    ${currentItemOptions.length > 0 ? currentItemOptions : '<option value="0">في البداية (لا توجد محطات بعد)</option>'}
+                                    <option value="${timelineItems.length}">في نهاية السهم (بعد المحطة الأخيرة)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 md:p-6 border-t border-slate-100 flex items-center justify-between gap-3 bg-slate-50 flex-shrink-0">
+                        <button type="button" id="cancelApplyTemplateBtn" class="px-5 py-3 bg-white hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors border border-slate-200">
+                            إلغاء
+                        </button>
+                        <button type="button" id="confirmApplyTemplateBtn" class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> تطبيق القالب في الموضع المحدد
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const content = modal.querySelector('.m-modal-content');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+
+            window.toggleCustomPlacementDropdown = (show) => {
+                const el = modal.querySelector('#customPlacementContainer');
+                if (el) el.classList.toggle('hidden', !show);
+            };
+
+            window.onTemplateRadioSelected = (tid) => {
+                modal.querySelectorAll('.template-radio-card').forEach(card => {
+                    const isSelected = card.getAttribute('data-tid') === tid;
+                    card.classList.toggle('border-indigo-500', isSelected);
+                    card.classList.toggle('bg-indigo-50/40', isSelected);
+                    card.classList.toggle('ring-2', isSelected);
+                    card.classList.toggle('ring-indigo-200', isSelected);
+                    card.classList.toggle('border-slate-200', !isSelected);
+                    card.classList.toggle('bg-white', !isSelected);
+                });
+            };
+
+            window.deleteCustomTemplate = (tid) => {
+                showConfirmModal('هل ترغب بحذف هذا القالب المخصص نهائياً؟', () => {
+                    timelineTemplates = timelineTemplates.filter(t => t.id !== tid);
+                    saveTimelineTemplates();
+                    closeModal();
+                    openApplyTemplateModal(defaultInsertIndex);
+                    showNotification('تم حذف القالب المخصص');
+                });
+            };
+
+            modal.querySelector('#closeApplyTemplateX').onclick = closeModal;
+            modal.querySelector('#cancelApplyTemplateBtn').onclick = closeModal;
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+            modal.querySelector('#confirmApplyTemplateBtn').onclick = () => {
+                const selectedRadio = modal.querySelector('input[name="selectedTemplateRadio"]:checked');
+                if (!selectedRadio) {
+                    showNotification('يرجى اختيار قالب أولاً', true);
+                    return;
+                }
+                const chosenTemplate = timelineTemplates.find(t => t.id === selectedRadio.value);
+                if (!chosenTemplate) return;
+
+                const placementMode = modal.querySelector('input[name="templatePlacementMode"]:checked')?.value || 'replace';
+                let targetIdx = timelineItems.length;
+
+                if (placementMode === 'replace') {
+                    timelineItems = [];
+                    targetIdx = 0;
+                } else if (placementMode === 'start') {
+                    targetIdx = 0;
+                } else if (placementMode === 'end') {
+                    targetIdx = timelineItems.length;
+                } else if (placementMode === 'custom') {
+                    const sel = modal.querySelector('#customPlacementSelect');
+                    targetIdx = sel ? parseInt(sel.value, 10) : timelineItems.length;
+                }
+
+                const newItems = chosenTemplate.items.map((it, idx) => ({
+                    id: 'tl_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 4),
+                    timeRange: it.timeRange,
+                    title: it.title,
+                    notes: it.notes || '',
+                    category: it.category || 'general',
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                }));
+
+                timelineItems.splice(targetIdx, 0, ...newItems);
+                saveTimeline();
+                renderTimeline();
+                closeModal();
+                playSound('complete');
+                showNotification(`تم وضع بطاقات قالب "${chosenTemplate.name}" بنجاح!`);
+            };
         }
     </script>
 </body>
